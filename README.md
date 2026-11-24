@@ -5,10 +5,11 @@ An Obsidian vault of agent skills, a knowledge graph, and William North's workin
 ## What is in it
 
 - `William/`: how William codes, writes, and ships. Agents should follow these notes.
-- `Skills/`: procedures for prose cleanup, ADRs, and the PR review loop.
+- `Memory/`: compounded engineering lessons across William's repos, covering patterns that worked, failures and fixes, per-repo notes, and technical decisions.
+- `Skills/`: procedures for compounding memory, prose cleanup, ADRs, style checks, and the PR review loop.
 - `Knowledge Graph/`: 134 notes imported from [hq](https://github.com/nsawill1405/hq): ideas, agentic projects, ADRs, PDRs, and the building philosophy, linked with wikilinks so Obsidian's graph view shows the relationships.
 - `Reference/`: background on hq, its Work Graph skill, and its agent docs.
-- `tools/`: the hq importer, the vault linter, and a code style linter.
+- `tools/`: the hq importer, vault linter, code style linter, authorship check, skill exporter, and GitHub vault sync.
 
 Open the folder in Obsidian and start at `Home.md`.
 

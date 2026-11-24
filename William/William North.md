@@ -21,6 +21,7 @@ When a note in this folder disagrees with anything in `Knowledge Graph/` or `Ref
 - Ship complete, working features. Fix the root cause, not the symptom.
 - Keep repos release-ready: clear README, tests, lint, CI, and a security check before going public.
 - Be direct. Short messages, no filler, no marketing tone.
+- Never add Devin or any AI agent as a co-author on commits or pull requests, and never mention Devin or agents in titles, descriptions, code comments, or docs. Everything should read as William's own work.
 - Merge and release only when William asks.
 
 ## Detailed notes

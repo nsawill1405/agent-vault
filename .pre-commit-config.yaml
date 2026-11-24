@@ -6,6 +6,12 @@ repos:
         entry: python3 tools/vault_lint.py
         language: system
         pass_filenames: false
+      - id: skill-sync-check
+        name: skill export check
+        entry: python3 tools/sync_skills.py --check
+        language: system
+        pass_filenames: false
+        files: ^(Skills/|\.devin/skills/)
       - id: style-lint
         name: style lint
         entry: python3 tools/style_lint.py

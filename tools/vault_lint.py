@@ -12,13 +12,24 @@ import re
 import sys
 from pathlib import Path
 
-SKIPPED_FOLDERS = {".git", ".github", ".obsidian", ".trash", "tools", "node_modules"}
+SKIPPED_FOLDERS = {
+    ".git",
+    ".github",
+    ".obsidian",
+    ".trash",
+    ".devin",
+    ".devin-plugin",
+    "tools",
+    "node_modules",
+}
 ROOT_FILES_WITHOUT_FRONTMATTER = {"README.md", "AGENTS.md", "CLAUDE.md"}
 
-# Hand-written notes. Imported notes keep their author's wording, so they are not checked.
+# Hand-written and agent-compounded notes. Imported hq notes keep their author's wording.
 PROSE_CHECKED_PREFIXES = [
     "William/",
+    "Memory/",
     "Home.md",
+    "Skills/Compound Memory.md",
     "Skills/PR Review Loop.md",
     "Skills/Style Linter.md",
     "Reference/hq Overview.md",

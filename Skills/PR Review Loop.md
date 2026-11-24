@@ -24,7 +24,7 @@ Do not use the PR as the first test run.
 3. Run the repo's linter, formatter, type checker, and tests. Run `tools/style_lint.py` from this vault on the changed files if the repo has no stricter linter. See [[Style Linter]].
 4. Fix failures before pushing. If a check cannot run, say why in the PR.
 
-Commit only the intended work. Open the PR with a short summary and the checks you ran.
+Commit only the intended work. Never add Devin or any AI agent as a `Co-Authored-By` trailer, and never mention Devin, AI agents, session links, or "Generated with" footers in commit messages, PR titles, PR descriptions, or comments. Open the PR with a short summary and the checks you ran, written in William's voice.
 
 ## Write PR descriptions from files
 
@@ -47,4 +47,5 @@ Do not churn code just to satisfy a reviewer's preference. Review bots give sugg
 - CI passes.
 - No real review finding is left open.
 - Every fix is committed and pushed.
+- Reusable lessons, failed approaches, and repo quirks are recorded in `Memory/` through [[Compound Memory]].
 - William gets the PR link and one line on anything still outstanding.

@@ -42,8 +42,14 @@ Match this style when writing READMEs for his projects.
 ## Git
 
 - Small, focused commits with plain messages.
-- Pull requests by default. Do not push to `main` unless asked.
+- Pull requests by default. Do not push to `main` unless asked. Exception: `Memory/` updates in `agent-vault` push directly to `main` through `tools/sync_vault.py` so the vault stays current across sessions (stated).
 - Never rewrite shared history.
+
+## Authorship and attribution (stated)
+
+- Never add Devin or any AI agent as a `Co-Authored-By` trailer on commits or pull requests.
+- Never mention Devin, AI agents, session links, badges, or "Generated with" footers in commit messages, PR titles, PR descriptions, code comments, or documentation.
+- Write every commit message, PR title, PR description, and comment in William's voice so it reads as written directly by him. Use William's git identity.
 
 ## Decision records
 
