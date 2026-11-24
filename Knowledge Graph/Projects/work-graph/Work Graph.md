@@ -1,0 +1,491 @@
+---
+title: "Work Graph"
+type: project
+description: "A public source of truth for outcomes, dependencies, evidence, leases, and the human decisions that keep work moving"
+date: "2026-09-04"
+status: "in_progress"
+tech_stack:
+  - "Cedar"
+  - "Cloudflare Access"
+  - "Cloudflare Queues"
+  - "Drizzle"
+  - "DuckDB"
+  - "dbt"
+  - "GitHub"
+  - "Hono"
+  - "Hyperdrive"
+  - "OpenAPI"
+  - "Parquet"
+  - "Spectral"
+tags:
+  - hq
+  - project
+source: "https://robbiepalmer.me/projects/work-graph"
+author: Robbie Palmer
+---
+
+# Vision
+
+Replace the project board as the primary model of work with a directed acyclic
+graph that people and agents can share.
+
+The graph should answer five questions:
+
+* What outcome matters most?
+* Which work is ready now?
+* What blocks the critical path?
+* Who currently holds each work item?
+* What evidence would prove it complete?
+
+The first user is me, across the projects in this repository. Work Graph now
+holds the migrated personal plan that previously sat across Shortcut, GitHub,
+live agent sessions, and memory.
+
+# Problem
+
+Existing task tools assume people create, refine, assign, move, and close
+tickets. Agents make each of those actions cheap enough to flood the interface.
+A board full of generated prose can contain more information while making the
+actual state of delivery harder to understand.
+
+Much of that information should never require human attention. People care
+about priorities, product choices, risk, blocked outcomes, and whether the
+evidence is strong enough. They should not have to supervise every transition
+that leads there.
+
+A flat backlog also hides the important structure. Research may unlock a design
+decision. That decision may unlock two prototypes. Only one prototype may need
+to reach production before downstream tasks become useful. A visible DAG can
+show the critical path and the work that can safely run in parallel.
+
+# Approaches tried
+
+I have used Jira, Linear, GitHub Issues, GitHub Projects, Shortcut, Zen, CCPM,
+and extensions that try to add epics to simpler trackers. I have also watched
+teams fall back to local Markdown plans or keep the real execution plan in
+somebody's head.
+
+Simple Kanban boards, work-in-progress limits, lead time, flow, and team
+ownership have made teams much more productive in the past. Those principles
+still matter. The interface built around humans creating and moving every
+ticket does not survive agents producing and completing far more intermediate
+work. It becomes a sea of weakly written tickets which no person should need to
+read.
+
+Work Graph is authoritative for migrated personal executable work. The cutover
+reconciled all 131 active personal Shortcut stories and moved that fixed set to
+Done after owner review. Shortcut is now a legacy record and possible import
+source, not a place where current work state changes.
+
+GitHub issues, security notifications, Renovate pull requests, PostHog-created
+fixes, and live agent sessions still produce useful signals. Work Graph records
+the resulting outcome, priority, lease, and evidence. Those systems remain
+observers, inputs, or projections rather than competing work authorities.
+
+# Responsibilities
+
+The public knowledge graph owns initiative and project prose and their
+long-lived relationships. Work Graph keeps operational mirrors of those scopes
+so they can carry operational stack rank without becoming a second prose source
+of truth.
+
+The Work Graph owns:
+
+* flexible work items, their parent-child hierarchy, and dependencies;
+* contextual initiative, project, and ticket stack ranks;
+* explicit, reason-bearing expedites;
+* owner-defined priority and policy;
+* optional briefs, acceptance criteria, context links, and completion evidence;
+* work state and the currently active lease;
+* blockers and attention requests;
+* plan revisions, including split, replacement, invalidation, and newly
+  discovered work; and
+* projections for people, agents, and external tools.
+
+It does not choose the model, machine, subscription, or person that should do a
+work item. The [[Agent Coordinator|Agent Coordinator]] owns that concern.
+
+# Architecture
+
+This view borrows C4's boundary and relationship conventions. It shows the Work
+Graph system, its main containers and components, the places where the CLI runs,
+and the external systems it uses. It is not a production deployment diagram.
+
+People and agents install the CLI on local workstations, remote development
+workspaces, or automation runtimes. The CLI sends authenticated commands and
+queries to the REST API. For pull-request commands, it also reads current status
+and checks from GitHub before attaching that snapshot to a work item.
+
+The public Knowledge Graph remains authoritative for initiative and project
+meaning. Owners and agents use its stable identifiers, URLs, relationships, and
+source revisions when they explicitly update Work Graph's knowledge-scope
+mirrors. Those mirrors add operational lifecycle and stack rank without copying
+the project prose.
+
+GitHub webhook observation is a planned, separate automation path. A dedicated
+observer will validate delivery events and place them on a queue before evidence
+ingestion reaches the same API boundary. It cannot bypass policy or write
+directly to the coordination store.
+
+## System context and CLI deployment
+
+```mermaid
+flowchart TB
+People["Owner and agent workers<br/>[People]"]
+Environment["Development environments<br/>[Deployment nodes]<br/>Local, remote, CI, or agent<br/>Work Graph CLI installed"]
+GitHub["GitHub<br/>[External system]<br/>Pull requests, checks,<br/>delivery events"]
+Automation["Planned GitHub automation<br/>[Containers]<br/>Observer, queue, ingestion"]
+WorkGraph["Work Graph<br/>[Software system]<br/>Work items, scope mirrors,<br/>leases, and evidence"]
+Knowledge["Public Knowledge Graph<br/>[External system]<br/>Canonical initiatives<br/>and projects"]
+
+People -->|"uses CLI"| Environment
+Environment -->|"commands"| WorkGraph
+Environment -->|"reads PRs and checks"| GitHub
+GitHub -.->|"signed events"| Automation
+Automation -.->|"evidence commands"| WorkGraph
+WorkGraph -->|"mirrors scope"| Knowledge
+
+classDef person fill:#7c3aed,color:#fff,stroke:#6d28d9
+classDef external fill:#475569,color:#fff,stroke:#334155
+classDef environment fill:#e0f2fe,color:#0c4a6e,stroke:#0284c7
+classDef system fill:#2563eb,color:#fff,stroke:#1d4ed8
+classDef plannedNode fill:#fff7ed,color:#9a3412,stroke:#ea580c,stroke-dasharray:5 5
+class People person
+class Knowledge,GitHub external
+class Environment environment
+class WorkGraph system
+class Automation plannedNode
+```
+
+## Work Graph components
+
+Inside Work Graph, owner policy controls changes to the coordination model. Work
+items and dependencies define the plan. Scope mirrors and ticket rank feed the
+priority projection. Leases fence concurrent workers, evidence gates release,
+and attention requests stop work that needs a person. PostgreSQL keeps current
+records and immutable event history.
+
+```mermaid
+flowchart TB
+subgraph workgraph["Work Graph [Software system]"]
+API["REST API<br/>[Container]<br/>Authenticated application boundary"]
+
+subgraph coordination["Coordination application [Container]"]
+Policy["Owner policy<br/>[Component]<br/>Allowed transitions and evidence rules"]
+Plan["Work items and dependency DAG<br/>[Component]<br/>Plan and executability"]
+Scopes["Knowledge-scope mirrors<br/>[Component]<br/>Initiatives, projects, lifecycle, and rank"]
+Priority["Priority projection<br/>[Component]<br/>Ready work and critical paths"]
+Execution["Leases and attention<br/>[Component]<br/>Fencing, decisions, and access stops"]
+Evidence["Context and delivery evidence<br/>[Component]<br/>Traceability and release gate"]
+end
+
+Store[("PostgreSQL<br/>[Container]<br/>Current records and immutable event history")]
+
+API --> Policy
+Policy --> Plan
+Policy --> Scopes
+Policy --> Execution
+Policy --> Evidence
+Plan --> Priority
+Scopes --> Priority
+Plan --> Store
+Scopes --> Store
+Execution --> Store
+Evidence --> Store
+Store --> Priority
+end
+
+classDef container fill:#2563eb,color:#fff,stroke:#1d4ed8
+classDef component fill:#0f766e,color:#fff,stroke:#115e59
+classDef data fill:#334155,color:#fff,stroke:#1e293b
+class API container
+class Policy,Plan,Scopes,Priority,Execution,Evidence component
+class Store data
+```
+
+# A constrained but adaptable graph
+
+Agents should be able to change the plan when execution teaches them something.
+They may split work that exceeds its intended scope, add a missing dependency,
+mark earlier work as invalid, or propose a different route to the outcome.
+Allowing arbitrary
+workflows invented during every session would make state hard to query and
+unsafe to automate.
+
+Owners should define which transitions, evidence requirements, and plan changes
+are allowed. Projects with low risk can grant broad authority. Production
+systems can require review at specific boundaries.
+
+# Adaptive planning
+
+The graph should support [[Adaptive Planning|adaptive planning]] towards a
+fixed goal. Expect the plan to be wrong and revise it as evidence arrives.
+Knowledge work changes what we know, including whether a planned item still
+helps reach that goal. [[Epistemology|Epistemology]] informs how we assess
+the evidence behind those decisions.
+
+Detail should follow evidence. Ready work needs a bounded scope and completion
+criteria. Work behind unresolved research or design decisions should remain
+provisional, with room to refactor, rescope, and reprioritise it. Downstream
+position often means more uncertainty, but graph depth alone cannot measure
+confidence. The graph should record the assumptions that make a branch useful
+and the evidence that could invalidate it.
+
+Only work in flight is committed. Regularly replenish and reprioritise the ready
+queue, then pull its highest-priority eligible item when capacity becomes
+available. Interrupting active work is expensive and needs a reason strong
+enough to justify the lost progress and context. A revision should identify the
+affected branch, retain its history, and explain the evidence behind the change.
+
+The graph should expose critical paths and opportunities to parallelise work,
+then help reduce lead times by removing waits and dependencies. Forecasting is
+outside its scope. It does not store estimates or predict delivery dates for
+queued or active work. Workers can report progress and blockers without
+turning either into a forecast.
+
+The installed CLI is the minimum planning interface. It should project the
+highest-priority unresolved outcome, the dependency chains blocking it, ready
+leaves that can start now, and independent branches that can run in parallel.
+The view describes the current plan structure and does not estimate durations
+or forecast delivery. Agents can use that projection to explain the plan and
+propose changes from any device where the owner can reach them.
+
+The Work Graph records those assumptions, commitments, and revisions. The
+[[Semi-autonomous Software Development|wider initiative]]
+owns the feedback loop that uses delivery evidence and available capacity to
+propose better plans. The Agent Coordinator continues to own actor selection.
+
+[[PDR 000 - Adapt plans with flexible work items|PDR 000]]
+records the product choice to let work change shape without fixed ticket types.
+[[PDR 002 - Rank work in context and explain expedites|PDR 002]] records the
+contextual ranking and reason-bearing expedite policy.
+
+# Core model
+
+The first schema should stay small:
+
+* A **knowledge scope** mirrors an initiative or project. Active scopes own an
+  ordinal position among active scopes of the same kind. Archived scopes keep
+  historical context without participating in personal scheduling. The
+  knowledge graph remains authoritative for the scope's meaning.
+* A **work item** is the only recursive unit of planned work. It may be
+  childless, gain children during execution, or become executable again after
+  its children terminate. Epic, task, and subtask are presentation labels.
+* A **dependency** determines when work becomes ready and exposes the critical
+  path. Released and cancelled blockers both satisfy it.
+* A **lease** gives one actor temporary ownership without making abandoned work
+  disappear. Its epoch fences requests from an actor whose stale lease was
+  reclaimed.
+* **Context** links a work item to a knowledge scope, governing or background
+  ADR, pull request, note, or supplemental reference without pretending those
+  relationships have equal workflow meaning.
+* An **attention request** asks a person for a decision, authority, access,
+  review, or help after the actor exhausts the allowed alternatives.
+
+Executability is derived. An open item is ready when it has no active lease,
+unresolved attention, unsatisfied dependency, or non-terminal direct child.
+Adding children to claimed work makes the parent wait. Once those children
+terminate, the parent can be claimed again for synthesis or completion. The
+system never terminates the parent automatically.
+
+Released work is successfully complete. Release is not a way to give up a
+lease or return unfinished work to the queue. For repository-backed work, the
+release transition requires evidence that the change was merged and deployed.
+A passing local build, a commit, or an open pull request does not qualify.
+
+[[PDR 001 - Require a deliberate decision to finish decomposed work|PDR 001]]
+keeps parent completion explicit after decomposition.
+[[PDR 004 - Keep delivery observations separate from completion|PDR 004]]
+keeps observed delivery evidence separate from the terminal decision.
+
+The system needs a history of changes even if the main interface shows only the
+current state. Otherwise an expired lease or rewritten plan can erase the
+context needed by the next actor.
+
+## Knowledge scope lifecycle
+
+Knowledge scopes have an operational lifecycle separate from project prose and
+publication status. An active scope can schedule work and has a rank among
+active scopes of the same kind. An archived scope keeps its source snapshot,
+relationships, events, and historical ticket context, but default listings and
+priority operations exclude it.
+
+Archiving requires a reason and fails while the scope still schedules open
+work. The owner must move, release, or cancel that work first. Archived scopes
+cannot receive new ticket assignments or relationships. Restoring a scope
+places it at the median active rank. Refreshing its title, URLs, or source
+revision does not restore it.
+
+Archive completed personal projects and work managed by an employer. This
+keeps the public knowledge graph complete without mixing every published
+project into the personal execution plan.
+
+# Leases and handoff
+
+Only one actor should hold a work item at a time. A lease can be renewed while work
+continues and expires when an agent runs out of time, focus, or usage allowance.
+Expiry makes the item reclaimable. A monotonically increasing lease epoch
+prevents a delayed request from the previous worker changing it after takeover.
+
+A useful handoff should preserve findings, artifacts, attempts, unresolved
+problems, and the recommended next action. The exact contract should emerge
+from personal use rather than demand a long report for every small item.
+
+# Owner control and attention
+
+The owner can manage the full graph through agents using the installed CLI. A
+dedicated mobile or desktop application is optional and should not gate the
+move away from a conventional tracker.
+
+Attention requests should collect:
+
+* ambiguity that changes the product or plan;
+* missing authority, secrets, or access;
+* repeated technical failure after the actor has tried the allowed alternatives;
+* review or approval required by owner policy; and
+* discoveries that change scope or priority.
+
+Each item should include the decision needed, why it is needed now, options the
+actor considered, the affected critical path, and the consequence of waiting.
+A response should update the graph and allow eligible work to resume. Work with
+lease history requires an explicit claim, which keeps automatic selection on
+never-started tickets. A returning worker or a deliberate replacement can name
+the ticket to continue it, including stale recovery after a worker disappears.
+
+# Public work, private telemetry
+
+The work DAG should normally be public. Public work lets contributors and agents
+understand the same plan without translating it into a second tracker.
+
+Execution telemetry does not belong there. Token usage, model calls, retries,
+latency, private logs, and detailed cost data should flow to the data lake. The
+Work Graph can keep the evidence and summary needed to govern work without
+becoming an analytics warehouse.
+
+[[ADR 011 - dbt lakehouse marts over privacy-safe ticket captures|ADR 011]] chooses scheduled,
+bounded capture of privacy-safe ticket and event records into private R2. dbt
+uses DuckDB to transform those raw captures into canonical Parquet facts and
+versioned lakehouse marts. DuckDB reports read the marts without PostgreSQL
+access. Verified canonical facts survive terminal-ticket pruning, while
+private operational fields remain subject to the database-backup recovery
+window rather than entering a permanent analytics archive.
+
+# Market test
+
+[[PDR 003 - Make Work Graph authoritative for executable work|PDR 003]] records
+the decision to make Work Graph authoritative for migrated personal executable
+work and the evidence that supported the Shortcut cutover.
+
+Linear has become the closest commercial competitor. Its
+[Agent platform](https://linear.app/docs/agents-in-linear) lets people delegate
+issues to installed agents, and its
+[coding sessions](https://linear.app/docs/coding-sessions) run Codex or Claude
+Code in managed cloud environments. Linear can carry issue history into the
+session, expose work through MCP, and return a pull request for review. Its
+coding environment currently belongs to one repository.
+
+[Linear's paid plans](https://linear.app/pricing) cost $10 per user per month for
+Basic and $16 for Business when billed yearly. Jira lists $7.91 per user per
+month for Standard and $14.54 for Premium on its
+[pricing page](https://www.atlassian.com/software/jira/pricing). This shows that
+teams pay for work coordination, but both products also have free plans that can
+serve the first users.
+
+Linear coding sessions add usage charges to the seat price. Model tokens pass
+through at the provider's published rate without markup, and each session costs
+$0.25 per 20-minute sandbox block. That is $0.75 per session-hour before tokens.
+Concurrent sessions each incur the charge. At launch, Linear granted eligible
+workspaces a shared pool of promotional AI credits equal to $20 multiplied by
+the number of unsuspended users. The grant does not recur monthly.
+
+The Work Graph should not exist merely because paid task trackers exist. It must
+beat Linear plus its MCP interface for my real workflow. Different people and
+agents should be able to find ready work, hold leases, change the plan within
+policy, and attach the evidence needed to close an item. The graph must also work
+across repositories and long-running environments without making one
+coding-session provider authoritative.
+
+Do not set a standalone price yet. First replace Shortcut and memory for one
+real project. For later users, ask whether the graph replaced a paid tracker,
+prevented them from buying one, or made the combined remote workspace worth
+more. Those behaviours support a price. A feature comparison does not.
+
+# First useful release
+
+1. Model active and archived knowledge scopes, flexible work items,
+   dependencies, leases, notes, attention requests, typed context, and an
+   immutable event history.
+2. Produce a deterministic ready queue globally and within an initiative,
+   project, or parent item. Fuse contextual initiative, project, and ticket
+   ranks, and propagate blocked descendant urgency to blockers.
+3. Atomically claim the next eligible item or a chosen item, renew its lease,
+   and reclaim it after expiry with fencing against the old worker.
+4. Let a worker release, cancel, or decompose claimed work. Decomposition adds a
+   child DAG and makes its ready leaves inherit the parent's priority position.
+5. Expose the workflow through an unversioned REST API and installable
+   TypeScript CLI. Keep MCP as a later adapter over the same application layer.
+6. Attach initiative, project, ADR, pull-request, note, and reference context
+   without demanding a long ticket template.
+7. Deploy the service behind Cloudflare Access with service-token credentials
+   for headless workers.
+8. Enter the remaining Work Graph plan into the service and use it to complete
+   its own MVP.
+
+# Next useful slice
+
+Add a critical-path projection to the REST API and installed CLI. It should
+explain the active blocking chains behind the highest-priority outcomes and
+show which ready leaves and independent branches can proceed in parallel. The
+projection must remain deterministic and machine-readable so agents can use it
+for planning without scraping prose.
+
+# Later work
+
+* Analytics that find recurring waits, failed handoffs, and demands for human
+  intervention
+* Automatic creation of infrastructure work when a repeated bottleneck has a
+  credible systemic fix
+* Team ownership and multiple policy domains
+* Projections into GitHub, Shortcut, or chat where they help people work
+* MCP access after the CLI has proved the application operations
+* Automatic merge and deployment when required evidence and owner policy agree
+* Public contributor workflows for Open Collective Development
+* An optional public DAG view and dedicated graphical attention inbox after the
+  agent and CLI workflow proves that either would remove a real constraint
+
+# Success
+
+The Work Graph succeeds when the next useful item is visible without
+reconstructing the plan from tools scattered across the workflow, expired work
+can be resumed by another actor, and human attention goes to decisions rather
+than ticket administration.
+
+The installed CLI should also explain why a priority outcome is blocked and
+which work can proceed in parallel. The owner should not need a separate
+graphical interface to recover that plan.
+
+Learning should change the plan without causing constant disruption. Track
+avoidable interruptions and rework alongside progress towards outcomes, and
+check whether people can keep moving when downstream work is uncertain.
+
+# Non-goals
+
+* Scheduling models or managing their capacity
+* Storing private operational telemetry in the public graph
+* Arbitrary labels in place of fields with defined scheduling, workflow, or
+  query meaning
+* Delivery forecasting and estimates
+* Automatically terminating a parent when its last child terminates
+* Asking owners or agents to calibrate a global numeric priority scale
+* Maximizing task throughput without regard for outcomes
+* Replacing owner judgment with one fixed risk policy
+* Requiring a dedicated graphical interface before Work Graph becomes the
+  authoritative work system
+
+
+## Links
+
+- ideas: [[Adaptive Planning]]
+- ideas: [[Epistemology]]
+- ideas: [[Directed Acyclic Graph (DAG)]]
+- initiatives: [[Semi-autonomous Software Development]]

@@ -1,0 +1,311 @@
+---
+title: "ADR 001: Stateful AI Code Review"
+type: decision
+date: "2026-07-25"
+status: "Proposed"
+tech_stack:
+  - "Cloudflare Workers"
+  - "Cloudflare Workflows"
+  - "Cloudflare R2"
+tags:
+  - hq
+  - decision
+source: "https://robbiepalmer.me/projects/agentic-code-review/adrs/001-stateful-ai-code-review"
+author: Robbie Palmer
+---
+
+# Context
+
+[[PDR 000 - Own review policy and evidence, rent model inference|PDR 000]]
+owns the product decision to retain review policy and evidence while keeping
+model inference replaceable. The technical prototype in
+[[ADR 000 - Custom Agentic Code Review|ADR 000]]
+showed that the finding contract and ensemble worked, but its GitHub Actions
+implementation is stateless and fires on every qualifying push. It resends
+largely unchanged diffs and repository context. Commit frequency therefore
+drives token spend even when the new commit adds little review risk.
+
+[[PDR 001 - Review Pull Requests by risk, not commit count|PDR 001]]
+defines the proposed behavior: retain state for an evolving Pull Request,
+review material changes, and avoid reposting resolved or unchanged findings.
+This ADR chooses the system structure needed to implement that behavior.
+
+# Decision
+
+I propose moving the custom reviewer from per-push GitHub Actions to a
+**stateful service on Cloudflare Workers**:
+
+1. A Worker receives verified GitHub webhooks and applies a deterministic
+   eligibility policy before invoking a model.
+2. One SQLite-backed
+   [Durable Object](https://developers.cloudflare.com/durable-objects/) per Pull
+   Request serialises events and stores the reviewed head SHA, changed-hunk
+   fingerprints, prior findings and dispositions, prompt/model versions, and
+   token and cost metrics.
+3. An alarm coalesces rapid pushes. A
+   [Cloudflare Workflow](https://developers.cloudflare.com/workflows/) performs
+   the fetch, scout, merge, and GitHub publication steps. Deterministic,
+   idempotent steps remain retryable, but paid model steps make one Workflow
+   and one HTTP attempt because the providers do not expose an idempotency
+   boundary. An expired per-PR lease terminates its old Workflow before a
+   replacement is admitted.
+4. OpenRouter is the paid inference gateway. At decision time,
+   [OpenRouter publishes 400+ models and 70+ providers](https://openrouter.ai/pricing).
+   It provides
+   [automatic provider failover and routing controls](https://openrouter.ai/docs/guides/routing/provider-selection)
+   for price, latency, and throughput, plus
+   [explicit model fallbacks](https://openrouter.ai/docs/guides/routing/model-fallbacks).
+   Its [published fee structure](https://openrouter.ai/docs/faq) adds a 5.5%
+   credit-purchase fee with a USD 0.80 minimum; BYOK has a separate fee after
+   its free monthly request allowance. For the dozens-of-dollars top-ups used
+   here, the percentage rather than the minimum governs. Even including that
+   fee, OpenRouter is cheaper for the exact Kimi K2.6 anchor model used here.
+   The stateful implementation therefore preserves the proven OpenRouter
+   scouts and merger, plus OpenCode's eligible free scouts.
+5. Each run appends a versioned analytical record to R2, forming a small data
+   lake separate from the Durable Object's operational state. It captures task
+   and change characteristics, originating coding agent where known, model and
+   prompt versions, findings and dispositions, latency, tokens, cache hits, and
+   cost.
+
+# Architecture
+
+The latency-sensitive review path and the slower evaluation path are separate:
+
+```mermaid
+flowchart TB
+GH["GitHub Pull Request events"]
+
+subgraph ONLINE["Review loop — latency sensitive"]
+W["Webhook Worker"]
+DO[("Pull Request Durable Object")]
+WF["Review Workflow"]
+AI["OpenRouter / OpenCode"]
+R2[("R2 review data lake")]
+
+W --> DO
+DO -->|"debounce + risk policy"| WF
+WF --> AI
+AI --> WF
+WF --> R2
+end
+
+subgraph OFFLINE["Evaluation and learning — asynchronous"]
+SIG["Later commits, thread events, replies, merge state"]
+EV["Evaluator Workflow + evaluation agent"]
+OUT["Attributed outcomes + scorecard"]
+CFG["Model, prompt, and trigger policy"]
+LEARN["Tests, AGENTS.md, skills, coding-agent choice"]
+
+SIG --> EV
+EV --> OUT
+OUT --> CFG
+OUT --> LEARN
+end
+
+GH --> W
+WF -->|"publish or update findings"| GH
+GH --> SIG
+R2 --> EV
+CFG -. "versioned improvements" .-> WF
+```
+
+The reviewer will run at the **Pull Request level, not the commit level**:
+
+* run a full review when a non-draft PR becomes ready, on an explicit command
+  or label, and before merge when material changes have not been reviewed;
+* run an incremental review after a quiet period when changed hunks are
+  materially different, touch security- or data-sensitive paths, or invalidate
+  an unresolved finding;
+* skip superseded webhook deliveries, already-reviewed content, generated
+  files, lockfile-only changes, and small non-semantic edits unless explicitly
+  requested; and
+* update existing findings instead of publishing duplicate threads.
+
+Incremental prompts will contain the stable review policy first, followed by
+bounded relevant context, unresolved findings, and only the new or modified
+hunks. The same PR/model pair will use a stable session-affinity key where the
+selected provider supports it. The durable state prevents unnecessary calls
+and context independently of provider-side caching; Durable Objects do not
+themselves cache model computation, and prefix-cache hits are not guaranteed.
+
+# Implementation evidence
+
+To evaluate PDR 001 without coupling the live review path to reporting, an
+asynchronous evaluator runs when a Pull Request is merged or closed. It runs
+again after a configurable outcome window if evidence remains incomplete. It
+joins each finding to subsequent diffs, thread resolution, replies and
+reactions, and final PR state. Deterministic evidence is preferred; a separate
+evaluation agent adjudicates ambiguous cases and must record its evidence and
+confidence. It does not need to block review. High-confidence outcomes may feed
+the live PR memory sooner so an already-addressed finding is not repeated.
+
+Each finding receives one versioned outcome:
+
+* **confirmed-fixed**. A later commit addresses the cited issue, supported by
+  the changed hunk and preferably thread resolution or acknowledgement;
+* **acknowledged**. The author accepts the issue but it is deferred or resolved
+  outside an attributable code change;
+* **rejected**. The author explicitly explains that it is wrong, irrelevant,
+  or not worth acting on;
+* **superseded**. The affected code disappears or changes for another reason,
+  so reviewer impact cannot be inferred; or
+* **no observable response**. The finding is unresolved or silently ignored
+  when the window closes. This workflow outcome provides no evidence about the
+  finding's correctness.
+
+The scorecard is calculated at finding, review-run, Pull Request, model, prompt,
+and originating-agent levels:
+
+| Metric                      | Calculation                                                                                                              |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Adjudicated acceptance rate | `(confirmed-fixed + acknowledged) / (confirmed-fixed + acknowledged + rejected)`; excludes censored outcomes             |
+| Fix-through rate            | `confirmed-fixed / published findings`, reported with the no-response share                                              |
+| Noise rate                  | `(rejected + duplicate findings) / published findings`                                                                   |
+| Cost per accepted finding   | Total review, evaluation, runtime, and storage cost divided by `confirmed-fixed + acknowledged`                          |
+| Token efficiency            | Accepted findings per million uncached input tokens, alongside cache-hit rate                                            |
+| Review efficiency           | Model calls and uncached input tokens per PR versus the stateless GitHub Actions baseline                                |
+| Time to useful finding      | PR-ready timestamp to the first subsequently accepted finding                                                            |
+| Missed-defect proxy         | Downstream human, CI, rollback, or incident findings in review scope that no reviewer raised; useful but not true recall |
+| Upstream prevention         | Recurrence rate for a failure class before and after adding a test, `AGENTS.md` rule, skill, or agent change             |
+
+Model and coding-agent comparisons must be stratified by change size, risk,
+language, task type, and repository area; otherwise task mix will dominate the
+result. Important model decisions should also use controlled replays of a
+frozen PR set with the same context, prompt, and budget. The baseline window,
+minimum sample size, and target improvements must be fixed before evaluating
+the proposal rather than selected after seeing results.
+
+Keep this architecture Proposed until representative replays and live Pull
+Requests show:
+
+* materially fewer model calls and uncached input tokens per PR than the
+  GitHub Actions baseline;
+* lower cost per accepted finding, with improved or non-inferior adjudicated
+  acceptance and noise rates;
+* no material loss of coverage from batching and incremental review; and
+* the state, retry, and publication boundaries operate without manual repair at
+  the tested review volume.
+
+# Architecture boundaries
+
+The provider adapter keeps the structured finding schema independent of any
+one model API. The operational store, immutable analytical records, and derived
+scorecard have separate ownership so a batch-reporting failure cannot block a
+live review.
+
+Cloudflare consolidates webhook compute, state, workflow execution, and object
+storage. That reduces the number of deployed systems while increasing platform
+concentration. The adapter and append-only records must remain portable enough
+to move inference or state without changing the finding contract.
+
+This ADR does not add dashboards, repository-wide semantic indexing, content
+review, compliance policy, or team administration. Those capabilities do not
+belong in the state and workflow boundary chosen here.
+
+# Alternatives
+
+## Tune the Existing GitHub Action
+
+GitHub concurrency, path filters, labels, and scheduled runs could reduce
+invocations cheaply. They do not provide authoritative cross-run PR memory,
+finding lifecycle, or efficient incremental context, so the workflow would
+remain a set of stateless jobs with increasingly complex coordination.
+
+## Pay for Qodo
+
+Qodo was useful during its trial and would remove most maintenance. Its free
+version is not producing reviews, however, and the custom workflow delivered
+better observed value per dollar. Reconsider if maintenance cost reverses that
+comparison.
+
+## Adopt Gemini Enterprise Code Review
+
+This restores a managed Gemini reviewer but adds enterprise billing,
+configuration, and product coupling to replace a consumer service that was
+withdrawn. It is a poor fit for a solo public repository.
+
+## Keep the Stateless OpenRouter Reviewer
+
+This retains broad model access and the best observed review economics with no
+migration. It leaves the core problem intact: every qualifying push purchases
+another review of mostly repeated context.
+
+## Use Workers AI for Inference
+
+Workers AI would keep orchestration and inference on Cloudflare, but that
+consolidation does not justify its current economics or reduced routing
+capability. At decision time its Kimi K2.6 route costs
+[USD 0.95 per million input tokens and USD 4.00 per million output tokens](https://developers.cloudflare.com/workers-ai/models/kimi-k2.6/).
+OpenRouter's live pricing page lists the same model at an average USD 0.67 and
+USD 3.39 respectively; after the 5.5% credit-purchase fee on the top-up size
+used here, those prices are approximately USD 0.71 and USD 3.58. Workers AI is
+therefore about 34% more expensive for input and 12% more expensive for output
+after the allowance is used. Provider-specific OpenRouter rates vary, so these
+figures record the decision-time comparison rather than a permanent price.
+
+The [10,000-neuron daily allowance](https://developers.cloudflare.com/workers-ai/platform/pricing/)
+is worth only USD 0.11 per day at the published USD 0.011 per 1,000-neuron
+rate. That is immaterial beside this review workflow's inference spend and does
+not warrant another adapter, quota accounting, or a single-provider route with
+fewer model and fallback choices. Reconsider only if published total pricing
+becomes competitive or it provides a uniquely valuable capability unavailable
+through the existing gateway.
+
+# Consequences
+
+## Positive
+
+* Review timing follows PR risk and readiness rather than commit count.
+* Durable hunk and finding state removes redundant calls; prefix caching can
+  further reduce the price and latency of repeated context.
+* Serialisation permits only one paid review at a time per PR; debounce and
+  idempotency prevent races and duplicate comments.
+* Per-PR model, token, cache-hit, finding, and disposition data strengthen the
+  existing evaluation flywheel.
+* Recurring defects can feed back into tests, skills, repository instructions,
+  and agent selection, reducing failures earlier in the development loop.
+* A portable real-work corpus supports model evaluation that reflects actual
+  tasks and creates a foundation for review agents in future products.
+* OpenRouter supplies broad model access and multi-provider resilience behind
+  one integration, while the inference boundary preserves direct APIs and
+  future gateways as alternatives.
+
+## Negative
+
+* Webhook security, GitHub App permissions, retries, state migrations, model
+  churn, and comment reconciliation become owned infrastructure.
+* Incremental review can miss interactions outside changed hunks; risk rules and
+  a final full-review path mitigate but cannot eliminate this.
+* Durable Objects, Workflows, inference-provider pricing, and platform limits
+  can change. Spend limits and per-PR budgets are required before production
+  use.
+* Session affinity improves prefix-cache probability but is not durable storage
+  or a cache guarantee; savings must be measured from returned usage data.
+* The private benchmark is observational: task mix, prompts, and coding agents
+  change over time, while dispositions are sparse and subjective. Results need
+  stratification and periodic controlled replays before driving model choices.
+* A growing corpus can retain source code, prompts, or future user-authored
+  content longer than intended. Data minimisation, access control, retention,
+  deletion, and redaction must be designed before collecting non-public data.
+* Consolidating on Cloudflare reduces operational surface while increasing
+  Cloudflare concentration risk.
+
+# Migration note
+
+This structural edit moves the owned-product boundary and Pull Request behavior
+to PDRs 000 and 001. It retains the original date, Proposed status,
+supersession, Cloudflare technology choices, state model, workflow and retry
+rules, analytical record contract, and technical adoption evidence. Later
+product-policy changes remain in later records rather than rewriting this
+proposal.
+
+
+## Links
+
+- ideas: [[Distributed Locking]]
+- ideas: [[Idempotency]]
+- supersedes: [[ADR 000 - Custom Agentic Code Review]]
+- implements product decisions: [[PDR 000 - Own review policy and evidence, rent model inference]]
+- implements product decisions: [[PDR 001 - Review Pull Requests by risk, not commit count]]
+- project: [[Agentic Code Review]]

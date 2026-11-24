@@ -1,0 +1,91 @@
+---
+title: "ADR 005: Record finding correctness separately from downstream utility"
+type: decision
+date: "2026-09-30"
+status: "Accepted"
+tags:
+  - hq
+  - decision
+source: "https://robbiepalmer.me/projects/agentic-code-review/adrs/005-optimise-for-recall-under-agent-mediated-triage"
+author: Robbie Palmer
+---
+
+# ADR 005: Record finding correctness separately from downstream utility
+
+## Context
+
+[[PDR 003 - Minimise owner attention with recall-first review|PDR 003]]
+makes owner attention the product objective and allows lower raw precision when
+agent-mediated triage produces useful discovery within safety, money, and time
+limits.
+
+[[ADR 001 - Stateful AI Code Review|ADR 001]]
+records one disposition for each published finding, and
+[[ADR 002 - DuckDB for the AI Review Scorecard|ADR 002]]
+resolves those versioned outcomes for analysis. That record can say whether the
+author fixed, acknowledged, rejected, or did not answer the cited claim. It
+cannot also say that a wrong claim prompted a different useful change without
+misrepresenting the claim as correct.
+
+The two facts need separate fields and separate evidence. Otherwise the
+scorecard either discards agent-mediated value or rewards a reviewer for making
+false claims that happen to coincide with unrelated edits.
+
+## Decision
+
+Keep finding correctness and downstream utility as separate versioned records.
+
+The existing disposition continues to classify the cited claim as
+`confirmed-fixed`, `acknowledged`, `rejected`, `superseded`, or
+`no-observable-response`. Add a separate evidence-backed effect with one of
+these values:
+
+* a direct fix for the cited issue;
+* a different useful improvement prompted by the investigation;
+* no material change;
+* unnecessary or harmful churn; or
+* an effect that cannot be determined.
+
+A different improvement requires a response that links the review to a
+specific change and an adjudication that the change is useful on its own
+merits. It does not change the original finding's correctness. A discarded edit
+attempt remains agent work, not useful product output.
+
+Record owner intervention, model and prompt versions, scout attribution,
+coverage, latency, tokens, cost, and the final-patch result beside the two
+classifications. Model comparisons report each scout's marginal useful
+contribution after reconciliation. Duplicate findings receive no extra recall
+credit.
+
+For AACR-Bench replays, positive references test issue recall. Negative
+references test whether the authoring agent rejects a bad premise, requests
+more evidence, or finds an independently justified improvement without adding
+a regression. Keep those results distinct from production dispositions and
+from the benchmark's original label.
+
+## Consequences
+
+The scorecard can represent a false finding that still led to a useful adjacent
+change without calling the finding correct. It can also identify harmful churn
+that a simple acceptance rate would miss.
+
+The evaluator now needs another versioned schema, evidence links, adjudication
+rules, and scorecard dimensions. Some effects will remain unknown. Agents may
+also try to create work that makes a noisy comment appear valuable, so the
+record requires independent evidence and inspection of the final patch.
+
+Controlled ablations can compare a scout's marginal contribution, but they add
+replay cost and cannot infer owner attention from finding count alone.
+
+## Migration note
+
+This structural edit moves the recall-first objective, human-attention policy,
+and acceptable trade-offs to PDR 003. It retains the original date, Accepted
+status, two-part outcome model, evidence requirements, benchmark treatment, and
+scorecard consequences. No architecture decision changed during migration.
+
+
+## Links
+
+- implements product decisions: [[PDR 003 - Minimise owner attention with recall-first review]]
+- project: [[Agentic Code Review]]

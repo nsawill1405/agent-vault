@@ -1,0 +1,79 @@
+---
+title: "ADR 000: Recursive work-item graph with combined cycle checks"
+type: decision
+date: "2026-09-13"
+status: "Accepted"
+tags:
+  - hq
+  - decision
+source: "https://robbiepalmer.me/projects/work-graph/adrs/000-flexible-work-item-graph"
+author: Robbie Palmer
+---
+
+# ADR 000: Recursive work-item graph with combined cycle checks
+
+## Context
+
+[[PDR 000 - Adapt plans with flexible work items|PDR 000]]
+requires one adaptable work-item concept, separate containment and blocking
+relationships, and derived readiness. The data model must support plan changes
+without losing identity or allowing the combined graph to deadlock.
+
+Initiatives and projects already have a durable source of truth in the public
+knowledge graph. The coordination store needs their scheduling identity and
+rank without copying their prose.
+
+## Decision
+
+Store initiatives and projects as non-executable operational scope mirrors.
+Each mirror keeps its stable identifier, scheduling fields, source revision,
+and links to the canonical knowledge-graph page.
+
+Represent executable work with one recursive `work_item` record and an optional
+single parent. Derive claimability from current state. An open item is
+claimable when it has no active lease, unresolved blocking attention,
+unsatisfied dependency, or non-terminal direct child.
+
+Store containment and dependencies as separate relationships, then project
+both into one waits-for graph for validation. Parents wait for unfinished
+children, and downstream work waits for blockers. Reject a write when the
+combined projection has a cycle, including a child that depends on its own
+parent even though neither stored relationship is cyclic by itself.
+
+Released and cancelled blockers satisfy dependencies because neither remains
+required. Replacement work needs a new dependency. A dependency on a parent
+constrains its descendants until the plan moves that edge to narrower work.
+
+Apply decomposition in one transaction. Create the child items and dependency
+edges, end the current lease, and let the children inherit the parent's scope
+and scheduling position. When the last direct child terminates, recompute the
+parent's readiness. The parent stays open until a worker claims it and makes an
+explicit terminal decision.
+
+## Consequences
+
+Queries must project ready, blocked, and waiting-on-children states instead of
+reading a fixed task type. Combined cycle validation is more expensive than
+validating the hierarchy and dependency graph independently, but it prevents
+deadlocks that either partial check would miss.
+
+The single-parent hierarchy keeps ordering and reparenting legible. Typed
+context can still connect one item to several knowledge scopes, ADRs, pull
+requests, and references without turning those links into extra parents.
+
+Atomic decomposition couples graph writes to lease termination and inherited
+scheduling fields. Those invariants need transaction-level tests against the
+production database engine.
+
+## Migration note
+
+The 1 November 2026 PDR migration moved the adaptable planning policy into PDR
+000\. This ADR keeps the original recursive schema, graph invariants, and
+transaction design. No architecture choice changed.
+
+
+## Links
+
+- ideas: [[Directed Acyclic Graph (DAG)]]
+- implements product decisions: [[PDR 000 - Adapt plans with flexible work items]]
+- project: [[Work Graph]]

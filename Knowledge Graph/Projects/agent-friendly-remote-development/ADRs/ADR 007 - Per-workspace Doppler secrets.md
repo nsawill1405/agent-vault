@@ -1,0 +1,67 @@
+---
+title: "ADR 007: Per-workspace Doppler secrets"
+type: decision
+date: "2026-09-09"
+status: "Accepted"
+tech_stack:
+  - "Doppler"
+tags:
+  - hq
+  - decision
+source: "https://robbiepalmer.me/projects/agent-friendly-remote-development/adrs/007-doppler-secrets"
+author: Robbie Palmer
+---
+
+# Context
+
+[Home Lab ADR 024](https://robbiepalmer.me/projects/homelab/adrs/024-doppler-secrets) keeps unattended
+workload secrets in Doppler and uses the Doppler Kubernetes Operator to produce
+runtime Kubernetes Secrets. This project adds a second person to the host.
+Sharing one Doppler config or service token would let either workspace receive
+the other's provider credentials.
+
+[[ADR 003 - Portable per-user agent workspaces|ADR 003]]
+makes the workspace the unit of ownership and removal. Secret delivery must
+follow the same boundary.
+
+# Decision
+
+Give each workspace its own Doppler config and read-only service token. Store
+the token in that workspace's namespace, and let its `DopplerSecret` create a
+managed Secret only in the same namespace. The operator deployment may watch
+both namespaces, but workloads must never receive the Doppler service token.
+
+Use `homelab/prd_remote_development` for the operator workspace and
+`homelab/prd_remote_development_pilot` for the first pilot. Put only
+non-interactive runtime values owned by that user in each config. GitHub,
+Codex, and other interactive login sessions remain in the user's encrypted
+home directory.
+
+Create and rotate namespace tokens through the checked-in mise task. Deleting
+a pilot requires revoking its Doppler token as well as removing its namespace,
+private route, and provider sessions.
+
+Cross-project runtime access follows the same boundary. A separate read-only
+service token may let the operator select named secrets from another Doppler
+config. The managed Kubernetes Secret must contain only those selected values,
+and the workload must not receive the service token. The operator workspace
+uses this pattern for the Work Graph API client credentials.
+
+# Alternatives
+
+One shared config and token would be simpler to provision, but either workspace
+could then receive the other's runtime credentials. Keeping secrets as manually
+created Kubernetes Secrets would avoid the operator token, but would make
+rotation and host replacement depend on an undocumented copy operation.
+
+# Consequences
+
+A compromised workspace token is limited to that workspace's runtime config,
+and the operator performs repeatable secret delivery. Each workspace adds one
+Doppler config and token to create, rotate, and revoke. A token that can read
+another workspace fails the pilot isolation test.
+
+
+## Links
+
+- project: [[Agent-friendly Remote Development]]

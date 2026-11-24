@@ -1,0 +1,131 @@
+---
+title: "ADR 003: Portable per-user agent workspaces"
+type: decision
+date: "2026-09-06"
+status: "Proposed"
+tech_stack:
+  - "K3s"
+  - "T3 Code"
+  - "Tailscale"
+tags:
+  - hq
+  - decision
+source: "https://robbiepalmer.me/projects/agent-friendly-remote-development/adrs/003-portable-per-user-workspaces"
+author: Robbie Palmer
+---
+
+# Context
+
+[[ADR 000 - Hetzner Cloud|ADR 000]],
+[[ADR 001 - NixOS workspace hosts|ADR 001]], and
+[[ADR 002 - K3s for workspace workloads|ADR 002]]
+choose the provider, host operating system, and workload scheduler. This ADR
+defines the product unit that runs on them.
+
+A repository-scoped sandbox is useful for one task. This project also needs a
+durable personal environment that can contain related repositories, local
+services, worktrees, credentials, and multiple coding harnesses. A person should
+be able to change client devices while agents and terminals continue running.
+
+The current single-user deployment still needs an explicit workspace boundary.
+Informal process separation would make backup, removal, resource control, and
+later migration hard to test. A future second user also needs dedicated compute;
+a namespace on the current host is not enough.
+
+# Decision
+
+Make one persistent workspace the unit of ownership, access, backup, export,
+and billing. The workspace belongs to one user and may contain multiple
+repositories and concurrent agent sessions.
+
+Define each workspace as a K3s namespace containing:
+
+* one T3 Code workload and private Service;
+* a persistent-volume claim mounted as the user's home;
+* a distinct runtime identity and private endpoint;
+* explicit CPU and memory requests and limits;
+* default-deny network policy with named exceptions; and
+* backup and restore metadata tied to the workspace owner.
+
+The container runs as a non-root user. It receives no host filesystem mount,
+container-runtime socket, or cluster administrator credential. Source-control
+and model-provider sessions remain owned by the workspace user.
+
+This is a trusted-user container boundary. In a multi-user cluster, place each
+active user's workspace on dedicated compute. Users who require protection from
+a host compromise or a hostile neighbour need a separate virtual machine or
+microVM.
+
+# Portable workspace contract
+
+Keep the product boundary independent of one control plane. A conforming
+implementation must be able to:
+
+1. create a workspace for a named user from a versioned definition;
+2. expose T3 Code through a private, revocable endpoint;
+3. start, stop, inspect, update, and delete the runtime;
+4. preserve the user's durable home while replacing the runtime;
+5. enforce the declared compute and network limits;
+6. export the user's non-credential files in an ordinary archive;
+7. revoke provider sessions and exclude credentials from that export; and
+8. restore the durable state onto a newly provisioned host.
+
+The portable state consists of user files, workspace metadata, and the
+versioned runtime definition. Cluster objects, provider identifiers, and
+ephemeral process state are recreated.
+
+# Alternative boundaries
+
+A separate VPS per user provides a stronger and simpler security boundary. It
+also repeats the operating-system and control-plane overhead. Keep it as the
+fallback if dedicated workers in a shared cluster do not provide an operable
+resource and recovery boundary.
+
+A fresh sandbox per task improves isolation and elasticity. It fragments the
+multi-repository home and makes long-running terminals, local services, and
+cross-task context harder to preserve. Task sandboxes may later run inside or
+beside the durable workspace.
+
+A shared Unix account or shared home directory would be cheaper to start. It
+cannot provide independent authentication, backup, export, resource control,
+or removal, so it fails the product contract.
+
+# Acceptance test
+
+The pilot must pass these checks:
+
+1. Provision a second user's workspace on dedicated compute from the repository.
+2. Complete GitHub and model-provider login as that user.
+3. Reach only that user's T3 Code endpoint through Tailscale.
+4. Run simultaneous builds in both workspaces and prove that pressure on one
+   node does not interrupt the other.
+5. Restart the T3 Code workload and confirm the home directory is intact.
+6. Confirm that each workspace cannot read the other's volume or ordinary
+   service traffic.
+7. Export the second user's files with credentials excluded.
+8. Revoke the user's endpoint and provider sessions, then remove the workspace.
+9. Restore the encrypted backup on a replacement host and run a standard
+   development task.
+
+# Consequences
+
+The project gains a stable unit for lifecycle automation, recovery, pricing,
+and later control-plane comparisons. A person's related work remains together,
+while per-task sandboxes can still be introduced where they help.
+
+The pilot retains the security limits of containers on one host. Durable homes
+also require careful backup, credential exclusion, storage monitoring, and
+deletion procedures. The project must supply user lifecycle and routing until a
+control plane proves it can take over those jobs.
+
+# Review point
+
+Keep this ADR Proposed until both dedicated pilot workspaces complete the
+acceptance test.
+Revisit the workspace-per-person unit if observation shows that fresh per-task
+environments preserve the continuity users value.
+
+
+## Links
+
+- project: [[Agent-friendly Remote Development]]
