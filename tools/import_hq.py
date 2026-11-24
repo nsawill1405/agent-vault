@@ -412,6 +412,14 @@ def main():
     assign_names(notes)
     lookup = build_lookup(notes)
 
+    # Check every source before deleting anything, so a bad checkout leaves the vault as it was.
+    missing = []
+    for relative in PLAIN_DOCS:
+        if not (hq_root / relative).is_file():
+            missing.append(relative)
+    if len(missing) > 0:
+        raise SystemExit("Missing from the hq checkout: " + ", ".join(missing))
+
     if GRAPH_FOLDER.exists():
         shutil.rmtree(GRAPH_FOLDER)
     if DOCS_FOLDER.exists():
