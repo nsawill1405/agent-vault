@@ -11,7 +11,7 @@ author: Robbie Palmer
 
 This delivery contract governs the first Agent Coordinator pilot. It covers
 dependency vulnerability fixes in `Robbie-Palmer/hq` whose production effect is
-the personal-site UI deployed by [UI CD](../../.github/workflows/ui-cd.yml).
+the personal-site UI deployed by [UI CD](https://github.com/Robbie-Palmer/hq/blob/main/.github/workflows/ui-cd.yml).
 The production target is the Cloudflare Pages project `personal-site`, production
 branch `main`, served at `https://robbiepalmer.me`.
 
@@ -117,7 +117,7 @@ exists.
 
 Prefer a bounded repair when the cause is clear, the site remains usable, and
 the repair can pass the same gates promptly. Otherwise contain the rollout with
-the [UI production rollback](../../.github/workflows/ui-production-rollback.yml)
+the [UI production rollback](https://github.com/Robbie-Palmer/hq/blob/main/.github/workflows/ui-production-rollback.yml)
 workflow. Choose the most recent UI CD revision that passed production
 validation before the failed revision:
 

@@ -14,7 +14,7 @@ author: Robbie Palmer
 This working implementation brief records the agreed MVP behaviour so
 implementation can proceed without losing the reasoning that led to it.
 The project adopts the layers defined by the
-[Personal Engineering Platform](../ui/content/projects/personal-engineering-platform/index.mdx)
+[Personal Engineering Platform](https://robbiepalmer.me/projects/personal-engineering-platform)
 and keeps Work Graph-specific choices in local ADRs.
 
 ## Goal

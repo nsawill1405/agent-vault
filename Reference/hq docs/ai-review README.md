@@ -10,7 +10,7 @@ author: Robbie Palmer
 # Stateful AI review
 
 This top-level project is the deployable service proposed by
-[Agentic Code Review ADR 001](../ui/content/projects/agentic-code-review/adrs/001-stateful-ai-code-review.mdx).
+[[ADR 001 - Stateful AI Code Review|Agentic Code Review ADR 001]].
 
 The service is a visible, stateful publisher. A Worker verifies GitHub App
 webhook signatures and rejects other repositories. One SQLite Durable Object
@@ -317,7 +317,7 @@ stateful review against the same stateless evidence instead of entering
 baseline values by hand.
 
 Metric definitions follow
-[Agentic Code Review ADR 002](/projects/agentic-code-review/adrs/002-duckdb-ai-review-scorecard):
+[[ADR 002 - DuckDB for the AI Review Scorecard|Agentic Code Review ADR 002]]:
 acceptance excludes censored outcomes, fix-through and noise use published
 findings as their denominator, cost uses accepted findings, token efficiency
 uses uncached input tokens, and coverage uses reviewed over total hunks. Outputs

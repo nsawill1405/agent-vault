@@ -5,6 +5,7 @@
 # Everything this script writes is regenerated on each run, so do not hand-edit
 # files under "Knowledge Graph/" or "Reference/hq docs/". Put your own notes elsewhere.
 
+import posixpath
 import re
 import shutil
 import sys
@@ -14,6 +15,7 @@ VAULT_ROOT = Path(__file__).resolve().parent.parent
 GRAPH_FOLDER = VAULT_ROOT / "Knowledge Graph"
 DOCS_FOLDER = VAULT_ROOT / "Reference" / "hq docs"
 PUBLIC_SITE = "https://robbiepalmer.me"
+HQ_GITHUB = "https://github.com/Robbie-Palmer/hq/blob/main/"
 
 AGENTIC_PROJECTS = [
     "agent-coordinator",
@@ -344,14 +346,52 @@ def render_note(lookup, note):
     return "\n".join(lines) + body.rstrip() + "\n" + build_links_section(lookup, note)
 
 
-def import_plain_docs(hq_root):
+def content_path_to_site_url(repo_path):
+    # ui/content/projects/x/adrs/001-y.mdx -> /projects/x/adrs/001-y
+    # ui/content/projects/x/index.mdx      -> /projects/x
+    prefix = "ui/content/"
+    if not repo_path.startswith(prefix) or not repo_path.endswith(".mdx"):
+        return None
+    site_path = repo_path[len(prefix):-len(".mdx")]
+    if site_path.endswith("/index"):
+        site_path = site_path[:-len("/index")]
+    return "/" + site_path
+
+
+def rewrite_repo_links(lookup, text, relative_doc):
+    # Relative links in hq docs point at other files in the hq repo. Imported notes
+    # become wikilinks and everything else points at GitHub.
+    doc_folder = posixpath.dirname(relative_doc)
+
+    def replace(match):
+        label = match.group(1)
+        url = match.group(2)
+        is_external = url.startswith("http://") or url.startswith("https://") or url.startswith("mailto:")
+        if is_external or url.startswith("#") or url.startswith("/"):
+            return match.group(0)
+
+        file_part = url.split("#")[0]
+        repo_path = posixpath.normpath(posixpath.join(doc_folder, file_part))
+        site_url = content_path_to_site_url(repo_path)
+        if site_url is not None:
+            target = convert_site_link(lookup, site_url)
+            if target is not None:
+                return "[[" + target.name + "|" + label + "]]"
+            return "[" + label + "](" + PUBLIC_SITE + site_url + ")"
+        return "[" + label + "](" + HQ_GITHUB + repo_path + ")"
+
+    text = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", replace, text)
+    return rewrite_body_links(lookup, text)
+
+
+def import_plain_docs(hq_root, lookup):
     for relative in PLAIN_DOCS:
         source = hq_root / relative
         if relative == "ai-review/README.md":
             target_name = "ai-review README.md"
         else:
             target_name = Path(relative).name
-        text = source.read_text(encoding="utf-8")
+        text = rewrite_repo_links(lookup, source.read_text(encoding="utf-8"), relative)
         header = "---\n"
         header += "type: reference\n"
         header += "tags:\n  - hq\n  - reference\n"
@@ -432,7 +472,7 @@ def main():
         (folder / (note.name + ".md")).write_text(render_note(lookup, note), encoding="utf-8")
 
     (GRAPH_FOLDER / "Knowledge Graph Index.md").write_text(render_index(notes), encoding="utf-8")
-    import_plain_docs(hq_root)
+    import_plain_docs(hq_root, lookup)
     print("Imported " + str(len(notes)) + " graph notes and " + str(len(PLAIN_DOCS)) + " docs.")
 
 
