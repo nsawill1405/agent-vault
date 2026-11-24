@@ -51,5 +51,5 @@ call_parentheses = "Always"
 
 ## Swift and macOS (observed)
 
-William builds small native macOS utilities, like dustpan, Shelf, and clipdesk.
+William builds small native macOS utilities, like dustpan and clipdesk.
 Keep them native, light, and focused on one annoyance.

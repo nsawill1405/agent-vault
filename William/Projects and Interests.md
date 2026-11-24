@@ -28,9 +28,7 @@ Most are local-first and work inside the editor the developer already uses.
 | Whirl | Open source whiteboard for flowcharts, mind maps, and sticky notes, with live collaboration |
 | recall | Local-first memory for Python apps and AI agents, stored in one SQLite file |
 | dustpan | Keeps the macOS Downloads folder tidy with user rules and full undo |
-| Shelf | Native macOS utility between the clipboard and the filesystem |
 | clipdesk | macOS clipping and multi-platform publisher |
-| CRU Studio | Mac-first game studio built with Tauri and Rust/wgpu |
 | Orion | Subscription AI tool that helps developers build Roblox games |
 
 ## Recurring themes
