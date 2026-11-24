@@ -1,0 +1,21 @@
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Vault lint
+        run: python3 tools/vault_lint.py
+      - name: Style lint
+        run: python3 tools/style_lint.py tools
+      - name: Tests
+        run: python3 -m unittest discover -s tools/tests

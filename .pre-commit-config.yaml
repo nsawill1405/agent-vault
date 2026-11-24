@@ -1,0 +1,19 @@
+repos:
+  - repo: local
+    hooks:
+      - id: vault-lint
+        name: vault lint
+        entry: python3 tools/vault_lint.py
+        language: system
+        pass_filenames: false
+      - id: style-lint
+        name: style lint
+        entry: python3 tools/style_lint.py
+        language: system
+        types: [python]
+      - id: tool-tests
+        name: tool tests
+        entry: python3 -m unittest discover -s tools/tests
+        language: system
+        pass_filenames: false
+        files: ^tools/

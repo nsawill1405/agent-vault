@@ -1,0 +1,104 @@
+---
+title: "ADR 004: Use AACR-Bench as a Secondary Challenge Set"
+type: decision
+date: "2026-09-30"
+status: "Accepted"
+tags:
+  - hq
+  - decision
+source: "https://robbiepalmer.me/projects/agentic-code-review/adrs/004-use-aacr-bench-as-a-secondary-challenge-set"
+author: Robbie Palmer
+---
+
+# ADR 004: Use AACR-Bench as a Secondary Challenge Set
+
+## Context
+
+[[ADR 002 - DuckDB for the AI Review Scorecard|ADR 002]]
+uses outcomes from this project's real reviews to compare reviewer changes.
+[[PDR 002 - Put local review outcomes before benchmark scores|PDR 002]]
+makes those local outcomes the primary product evidence and requires a separate
+external challenge set to detect narrow overfitting. This ADR chooses that
+dataset and defines its reproducible technical boundary.
+
+Alibaba Aone's [AACR-Bench](https://github.com/alibaba/aacr-bench) offers a
+useful external check. At inspected commit
+`68a569759289a83654a59d06db2a72910edf0a4a`, it contains 2,145 comments on 200
+Pull Requests from 50 repositories in ten languages. The committed files
+contain 1,506 comments labelled correct and 639 labelled incorrect. The labels
+cover issue category, required context, file, side, and line range. The project
+is licensed under Apache-2.0.
+
+AACR-Bench is not a preference dataset in the pairwise sense. It labels whether
+an individual comment is technically correct. Its annotation process uses
+original review comments, model-generated candidates, and expert verification.
+In the inspected data, models seeded 1,597 comments and humans seeded 548.
+Several named source models may also belong to a model family under test. The
+dataset can therefore measure agreement with its annotation policy, but it
+cannot stand in for this project's definition of a useful finding.
+
+The published Hugging Face card reports 1,505 correct and 640 incorrect
+comments, while the current repository contains 1,506 and 639. The total is
+unchanged, but the class counts moved. Reproducible use requires an immutable
+source revision and content hashes.
+
+## Decision
+
+Add AACR-Bench to the DVC evaluation pipeline as a secondary challenge set.
+Keep its records, labels, matching rules, and reports separate from the
+production corpus. Do not use AACR-Bench as training data.
+
+The import will pin the source commit and hashes for both positive and negative
+samples. Replays will use the existing production-isolated runner and record
+the same model, prompt, coverage, token, latency, and cost provenance as local
+experiments.
+
+The external report will keep these measures separate:
+
+* positive-reference recall and line-location recall;
+* overlap with known negative comments;
+* unmatched generated findings, reported as unadjudicated rather than noise;
+* coverage, failures, latency, tokens, and cost; and
+* results by language, issue category, context level, and human or AI seed.
+
+Model-family overlap with an AI-seeded label will be flagged and excluded from
+the human-seeded robustness slice. A fixed sample of unmatched findings will
+receive blind manual adjudication before anyone interprets reference-match
+rate as precision. Baseline and candidate runs must use the same pinned cohort,
+runner, budgets, and matching policy.
+
+The pipeline will expose predeclared generalisation regressions to the product
+gate in PDR 002. Set numerical thresholds only after a baseline pilot
+establishes run-to-run variance and usable coverage.
+
+## Consequences
+
+The scorecard gains evidence beyond a single repository and owner without
+pretending that expert consensus and personal usefulness are interchangeable.
+The human-seeded slice offers the cleanest external check. The larger
+AI-seeded slice still helps test language, category, and context coverage, but
+its provenance must stay visible.
+
+The pipeline must reconstruct and cache 200 external repository states, map a
+new label schema, and add semantic matching plus manual adjudication. This adds
+runtime and storage cost. Reference recall also understates novel correct
+findings, while reference-match rate overstates noise when the benchmark is
+incomplete. Reports must use those narrower names rather than claiming ground
+truth precision.
+
+We will reconsider the dataset if its pinned commits become unavailable, its
+license changes, the repositories cannot be reproduced, or a pilot shows that
+matching uncertainty and model-family contamination swamp the external signal.
+
+## Migration note
+
+This structural edit moves the rule for how benchmark evidence affects product
+promotion to PDR 002. It retains the original date, Accepted status, pinned
+dataset choice, import contract, cohort controls, matching policy, reporting
+dimensions, and technical revisit conditions. The decision did not change.
+
+
+## Links
+
+- implements product decisions: [[PDR 002 - Put local review outcomes before benchmark scores]]
+- project: [[Agentic Code Review]]
