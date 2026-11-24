@@ -12,7 +12,7 @@ import re
 import sys
 from pathlib import Path
 
-SKIPPED_FOLDERS = {".git", ".github", ".obsidian", "tools", "node_modules"}
+SKIPPED_FOLDERS = {".git", ".github", ".obsidian", ".trash", "tools", "node_modules"}
 ROOT_FILES_WITHOUT_FRONTMATTER = {"README.md", "AGENTS.md", "CLAUDE.md"}
 
 # Hand-written notes. Imported notes keep their author's wording, so they are not checked.

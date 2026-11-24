@@ -47,6 +47,12 @@ class VaultLintTest(unittest.TestCase):
             write(folder, "A.md", GOOD_HEADER + "`[[Missing]]`\n\n```\n[[Also missing]]\n```\n")
             self.assertEqual(rules_for(folder), [])
 
+    def test_trashed_notes_do_not_count_as_link_targets(self):
+        with tempfile.TemporaryDirectory() as folder:
+            write(folder, "A.md", GOOD_HEADER + "See [[Gone]].\n")
+            write(folder, ".trash/Gone.md", GOOD_HEADER)
+            self.assertEqual(rules_for(folder), ["broken-link"])
+
     def test_duplicate_names(self):
         with tempfile.TemporaryDirectory() as folder:
             write(folder, "One/Same.md", GOOD_HEADER)
