@@ -22,8 +22,6 @@ SKIPPED_MARKDOWN_PARTS = {
 }
 
 IMPORTED_VAULT_PREFIXES = (
-    "Knowledge Graph/",
-    "Reference/hq docs/",
     "Skills/Unslop.md",
     "Skills/ADR Writing.md",
 )

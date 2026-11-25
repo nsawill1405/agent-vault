@@ -13,10 +13,10 @@ tags:
 It uses only the Python standard library, so it runs anywhere Python 3.10 or newer is installed.
 
 ```bash
-python3 /Users/williamnorth/Downloads/agent-vault/tools/style_lint.py src
+python3 ~/Downloads/agent-vault/tools/style_lint.py src  # on William's Mac
 ```
 
-If `agent-vault` is checked out next to the repo instead, run `python3 ../agent-vault/tools/style_lint.py src`.
+In a cloud session, where the vault is checked out next to the repo, run `python3 ../agent-vault/tools/style_lint.py src`.
 
 It prints `path:line: rule message` for each finding and exits with status 1 if there are any.
 

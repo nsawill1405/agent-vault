@@ -18,6 +18,8 @@ SKILL_ALLOWED_TOOLS = {
     "pr-review-loop": ["read", "grep", "glob", "exec"],
     "adr-writing": ["read", "edit", "grep", "glob"],
     "unslop": ["read", "edit", "grep", "glob"],
+    "parallel-agents": ["read", "grep", "glob", "exec"],
+    "writing-skills": ["read", "edit", "grep", "glob", "exec"],
 }
 
 DEFAULT_ALLOWED_TOOLS = ["read", "grep", "glob"]

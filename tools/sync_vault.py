@@ -27,8 +27,6 @@ MANAGED_VAULT_PATHS = [
     "Memory",
     "William",
     "Skills",
-    "Reference",
-    "Knowledge Graph",
     "tools",
     ".devin",
     ".devin-plugin",
@@ -137,7 +135,17 @@ def ahead_of_origin_count(vault_root: Path) -> int:
     return int(ahead_result.stdout.strip() or "0")
 
 
+def current_branch(vault_root: Path) -> str:
+    branch_result = run_git(vault_root, ["rev-parse", "--abbrev-ref", "HEAD"])
+    return branch_result.stdout.strip()
+
+
 def push_vault(vault_root: Path, message: str) -> int:
+    branch = current_branch(vault_root)
+    if branch != "main":
+        sys.stderr.write("Vault is on branch '" + branch + "'. Switch to main before syncing, or open a PR instead.\n")
+        return 1
+
     authorship_error = check_authorship.inspect_message_text(message)
     if authorship_error is not None:
         sys.stderr.write(authorship_error + "\n")
@@ -206,8 +214,10 @@ def build_session_context(vault_root: Path) -> str:
         summary = summary + " Recent memory notes: " + ", ".join(recent_titles) + "."
     summary = (
         summary
-        + " Search Memory/ before non-trivial debugging, compound durable lessons with /compound-memory, "
-        + "and never add Devin co-author trailers or mention Devin in commits, PRs, or comments."
+        + " This vault is the single knowledge base: read William/William North.md first, check Memory/Memory Index.md "
+        + "before non-trivial work, split independent work across parallel subagents with /parallel-agents, "
+        + "record lessons with /compound-memory, and write reusable procedures as skills with /writing-skills. "
+        + "Never add Devin co-author trailers or mention Devin in commits, PRs, or comments."
     )
     return summary
 

@@ -8,32 +8,18 @@ tags:
 
 # Memory index
 
-Compounded engineering knowledge from working across [[William North]]'s projects.
-Agents read these notes before starting non-trivial work and update them through [[Compound Memory]].
+Tested lessons that apply across [[William North]]'s projects. Agents add to these through [[Compound Memory]].
 
-## How it is organized
+Each topic note is a list of one-line rules. Facts about a single repo go in that repo's `AGENTS.md`, not here. The `Projects/` notes are only for repos agents cannot write to.
 
-| Folder | What belongs there |
-| --- | --- |
-| `Memory/Patterns/` | Designs, code structures, and workflows that worked cleanly in real tasks |
-| `Memory/Failures and Fixes/` | Subtle bugs, failed attempts, engine or API traps, root causes, and verified fixes |
-| `Memory/Project Notes/` | Per-repo architecture facts, build commands, and invariants |
-| `Memory/Decisions/` | Cross-project technical tradeoffs and tool evaluations |
+## Topics
 
-## Patterns
+- [[Unity]], compiling without the Editor, API traps, and NavMeshAgent vehicle steering.
+- [[Roblox]], engine traps, Studio MCP limits, and Fragua timing.
+- [[Local inference]], MLX setup and speed on Apple Silicon.
+- [[Agent tooling]], limits of Devin and the GitHub app.
 
-- [[MLX speculative decoding for Ternary Bonsai 2.5 27B]], fast MLX server recipe, 2-bit Metal verify kernel, MTP drafter tuning, and worker-thread stream fix on M4 Pro.
+## Projects without a writable repo
 
-## Failures and fixes
-
-- [[Roblox Studio MCP traps]], engine API limits, broken asset/vault paths and save behaviour hit during Roblox whiteboxing.
-- [[Unity NavMeshAgent vehicle AI traps]], `steeringTarget` lag spikes, `Warp` transform teleports, `NavMeshLink` mode switching, and CLI Roslyn compile checks in `gears-game-jam`.
-
-## Project notes
-
-- [[Illegal Racing project]], greenfield Roblox racing game with the authoritative design in the repo's `GDD.md`.
-- [[Unity Debug Watch project]], compile-check configurations, `[Shortcut]` vs `[MenuItem]` in Play Mode, and `UserSettings` persistence.
-
-## Decisions
-
-No notes yet. Add links here as cross-project decisions are recorded.
+- [[Illegal Racing]], Roblox racing game kept only on William's Mac.
+- [[Gears game jam]], Unity game the Devin GitHub app cannot push to.
