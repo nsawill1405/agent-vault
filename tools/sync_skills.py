@@ -20,6 +20,7 @@ SKILL_ALLOWED_TOOLS = {
     "unslop": ["read", "edit", "grep", "glob"],
     "parallel-agents": ["read", "grep", "glob", "exec"],
     "writing-skills": ["read", "edit", "grep", "glob", "exec"],
+    "profile-readme": ["read", "edit", "grep", "glob", "exec"],
 }
 
 DEFAULT_ALLOWED_TOOLS = ["read", "grep", "glob"]

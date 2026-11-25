@@ -22,6 +22,7 @@ Items marked "stated" are rules William gave. Items marked "observed" are defaul
 - Split work across parallel subagents with different roles to get code written quickly. See [[Parallel Agents]] (stated).
 - Always give William a plan before starting work, and keep a task list that you show him when planning and reporting progress (stated).
 - Write a new skill when a procedure is worth repeating. See [[Writing Skills]] (stated).
+- Keep the GitHub profile README up to date automatically when projects are added, removed or change. See [[Profile README]] (stated).
 - This vault is the single knowledge base for agents. Record lessons here or in the repo's `AGENTS.md`, not in an agent's private memory (stated).
 - Never add Devin or any AI agent as a co-author, and never mention Devin, agents, session links or badges in commits, PRs, comments or docs (stated).
 - Merge and release only when William asks (observed).

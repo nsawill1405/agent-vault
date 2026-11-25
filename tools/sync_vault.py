@@ -217,6 +217,8 @@ def build_session_context(vault_root: Path) -> str:
         + " This vault is the single knowledge base: read William/William North.md first, check Memory/Memory Index.md "
         + "before non-trivial work, split independent work across parallel subagents with /parallel-agents, "
         + "record lessons with /compound-memory, and write reusable procedures as skills with /writing-skills. "
+        + "After creating, deleting, renaming or publishing a repo, "
+        + "update the GitHub profile README with /profile-readme. "
         + "Never add Devin co-author trailers or mention Devin in commits, PRs, or comments."
     )
     return summary

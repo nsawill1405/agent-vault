@@ -10,6 +10,8 @@ tags:
 
 Part of [[William North]].
 
+His public projects are listed on his GitHub profile README. Keep it in step with this list through [[Profile README]].
+
 ## What William builds (observed)
 
 Tools that remove friction from game development, debugging and playtesting. Most are local-first and work inside the editor the developer already uses.

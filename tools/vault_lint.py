@@ -34,6 +34,7 @@ PROSE_CHECKED_PREFIXES = [
     "Skills/Style Linter.md",
     "Skills/Parallel Agents.md",
     "Skills/Writing Skills.md",
+    "Skills/Profile README.md",
 ]
 
 BANNED_CHARACTERS = {
