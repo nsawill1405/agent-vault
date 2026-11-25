@@ -24,7 +24,7 @@ SKIPPED_FOLDERS = {
 }
 ROOT_FILES_WITHOUT_FRONTMATTER = {"README.md", "AGENTS.md", "CLAUDE.md"}
 
-# Hand-written and agent-compounded notes. Imported hq notes keep their author's wording.
+# Hand-written and agent-compounded notes. Skills adapted from other repos keep their author's wording.
 PROSE_CHECKED_PREFIXES = [
     "William/",
     "Memory/",
@@ -32,7 +32,8 @@ PROSE_CHECKED_PREFIXES = [
     "Skills/Compound Memory.md",
     "Skills/PR Review Loop.md",
     "Skills/Style Linter.md",
-    "Reference/hq Overview.md",
+    "Skills/Parallel Agents.md",
+    "Skills/Writing Skills.md",
 ]
 
 BANNED_CHARACTERS = {

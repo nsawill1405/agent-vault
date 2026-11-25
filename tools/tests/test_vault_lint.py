@@ -62,8 +62,8 @@ class VaultLintTest(unittest.TestCase):
     def test_prose_rules_only_apply_to_hand_written_notes(self):
         with tempfile.TemporaryDirectory() as folder:
             write(folder, "William/Me.md", GOOD_HEADER + "We leverage tools \u2014 always.\n")
-            write(folder, "Memory/Patterns/Fix.md", GOOD_HEADER + "A robust fix.\n")
-            write(folder, "Knowledge Graph/Imported.md", GOOD_HEADER + "We leverage tools \u2014 always.\n")
+            write(folder, "Memory/Unity.md", GOOD_HEADER + "A robust fix.\n")
+            write(folder, "Skills/Unslop.md", GOOD_HEADER + "We leverage tools \u2014 always.\n")
             write(folder, ".devin/skills/one/SKILL.md", "---\nname: one\n---\n")
             write(folder, ".devin/skills/two/SKILL.md", "---\nname: two\n---\n")
             self.assertEqual(rules_for(folder), ["prose", "prose", "prose"])

@@ -27,8 +27,6 @@ MANAGED_VAULT_PATHS = [
     "Memory",
     "William",
     "Skills",
-    "Reference",
-    "Knowledge Graph",
     "tools",
     ".devin",
     ".devin-plugin",
@@ -206,8 +204,10 @@ def build_session_context(vault_root: Path) -> str:
         summary = summary + " Recent memory notes: " + ", ".join(recent_titles) + "."
     summary = (
         summary
-        + " Search Memory/ before non-trivial debugging, compound durable lessons with /compound-memory, "
-        + "and never add Devin co-author trailers or mention Devin in commits, PRs, or comments."
+        + " This vault is the single knowledge base: read William/William North.md first, check Memory/Memory Index.md "
+        + "before non-trivial work, split independent work across parallel subagents with /parallel-agents, "
+        + "record lessons with /compound-memory, and write reusable procedures as skills with /writing-skills. "
+        + "Never add Devin co-author trailers or mention Devin in commits, PRs, or comments."
     )
     return summary
 
