@@ -26,7 +26,7 @@ No notes yet. Add links here as patterns are recorded.
 
 ## Failures and fixes
 
-No notes yet. Add links here as postmortems and fixes are recorded.
+- [[Roblox Studio MCP traps]], engine API limits, broken asset/vault paths and save behaviour hit during Roblox whiteboxing.
 
 ## Project notes
 
