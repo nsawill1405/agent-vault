@@ -30,7 +30,7 @@ No notes yet. Add links here as postmortems and fixes are recorded.
 
 ## Project notes
 
-No notes yet. Add links here as per-repo notes are recorded.
+- [[Illegal Racing project]], greenfield Roblox racing game with the authoritative design in the repo's `GDD.md`.
 
 ## Decisions
 
