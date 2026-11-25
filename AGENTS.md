@@ -20,6 +20,7 @@ Never add Devin or any AI agent as a `Co-Authored-By` trailer on commits or pull
 
 ## Editing the vault
 
+- Treat the vault as public. Never write secrets, tokens, email addresses, or full home paths (use `~`). `tools/vault_lint.py` blocks them, and the sync refuses to push while it fails.
 - Use Obsidian `[[wikilinks]]` between notes. Link by note name, not path.
 - Every note needs YAML frontmatter with `type` and `tags`.
 - Put facts about William in `William/`. Mark each as stated (William said it) or observed (inferred from his repos).

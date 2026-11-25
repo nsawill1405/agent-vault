@@ -68,6 +68,18 @@ class VaultLintTest(unittest.TestCase):
             write(folder, ".devin/skills/two/SKILL.md", "---\nname: two\n---\n")
             self.assertEqual(rules_for(folder), ["prose", "prose", "prose"])
 
+    def test_private_data_is_flagged_everywhere(self):
+        with tempfile.TemporaryDirectory() as folder:
+            write(folder, "Memory/Paths.md", GOOD_HEADER + "Run `/Users/someone/tool`.\n")
+            write(folder, "Skills/Mail.md", GOOD_HEADER + "Mail me at someone@example.com.\n")
+            write(folder, "Memory/Key.md", GOOD_HEADER + "```\nghp_" + "a" * 36 + "\n```\n")
+            self.assertEqual(rules_for(folder), ["private-data", "private-data", "private-data"])
+
+    def test_noreply_email_and_tilde_paths_are_allowed(self):
+        with tempfile.TemporaryDirectory() as folder:
+            write(folder, "Memory/Ok.md", GOOD_HEADER + "Use ~/tool and 1+bot@users.noreply.github.com.\n")
+            self.assertEqual(rules_for(folder), [])
+
 
 if __name__ == "__main__":
     unittest.main()

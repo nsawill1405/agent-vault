@@ -62,6 +62,18 @@ BANNED_WORDS = [
 
 FORBIDDEN_FILE_NAME_CHARACTERS = '*"<>:|?#^[]\\'
 
+# Data that must never reach the repo, because the vault may be public.
+PRIVATE_DATA_PATTERNS = [
+    ("email address", re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}")),
+    ("full home path; use ~", re.compile(r"/(Users|home)/[A-Za-z0-9._-]+")),
+    ("GitHub token", re.compile(r"\b(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}|\bgithub_pat_[A-Za-z0-9_]{20,}")),
+    ("API key", re.compile(r"\bsk-[A-Za-z0-9_-]{20,}|\bAKIA[0-9A-Z]{16}\b|\bAIza[0-9A-Za-z_-]{35}")),
+    ("Slack token", re.compile(r"\bxox[abposr]-[A-Za-z0-9-]{10,}")),
+    ("private key", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----")),
+]
+
+ALLOWED_EMAIL_SUFFIX = "@users.noreply.github.com"
+
 WIKILINK_PATTERN = re.compile(r"!?\[\[([^\]]+)\]\]")
 
 
@@ -171,6 +183,25 @@ def check_prose(relative, code_free_lines):
     return findings
 
 
+def is_allowed_match(label, matched_text):
+    if label == "email address" and matched_text.endswith(ALLOWED_EMAIL_SUFFIX):
+        return True
+    return False
+
+
+def check_private_data(relative, text):
+    findings = []
+    for line_number, line in enumerate(text.splitlines(), start=1):
+        for label, pattern in PRIVATE_DATA_PATTERNS:
+            match = pattern.search(line)
+            if match is None:
+                continue
+            if is_allowed_match(label, match.group(0)):
+                continue
+            findings.append(Finding(relative, line_number, "private-data", label))
+    return findings
+
+
 def check_file_name(relative):
     for character in FORBIDDEN_FILE_NAME_CHARACTERS:
         if character in relative.name:
@@ -199,6 +230,7 @@ def lint_vault(vault_root):
         findings.extend(check_file_name(relative))
         findings.extend(check_frontmatter(relative, text))
         findings.extend(check_links(relative, code_free_lines, note_names, note_paths))
+        findings.extend(check_private_data(relative, text))
         if is_prose_checked(relative):
             findings.extend(check_prose(relative, code_free_lines))
 
