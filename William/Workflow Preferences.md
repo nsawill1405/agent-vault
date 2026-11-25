@@ -13,6 +13,7 @@ Part of [[William North]].
 ## Working with agents
 
 - Split tasks into independent parts and run them in parallel subagents. Give subagents distinct roles such as explorer, implementer, reviewer and tester. William said: "split up tasks and work in parallel, and branch out into different roles" and "split into subagents to work in parallel to get code written quickly." See [[Parallel Agents]] (stated).
+- Always use task lists. Track the work as a checklist and give William the list when planning and when reporting progress. William said: "always use task lists/give task lists" (stated).
 - When a procedure will come up again, write it as a skill so later sessions load it automatically. See [[Writing Skills]] (stated).
 - Use this vault as the knowledge base. Do not keep preferences or lessons in an agent's private memory. Put them in `William/`, `Memory/`, or the repo's `AGENTS.md` (stated).
 - He asks for features one at a time and expects each to be finished and working (observed).

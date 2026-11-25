@@ -20,6 +20,7 @@ Items marked "stated" are rules William gave. Items marked "observed" are defaul
 - No load-bearing hacks. Nothing should work only because of a fragile trick, a magic value, or an accident of ordering (stated).
 - Add a linter when a repo lacks one (stated).
 - Split work across parallel subagents with different roles to get code written quickly. See [[Parallel Agents]] (stated).
+- Always keep a task list, and show it to William when planning and reporting progress (stated).
 - Write a new skill when a procedure is worth repeating. See [[Writing Skills]] (stated).
 - This vault is the single knowledge base for agents. Record lessons here or in the repo's `AGENTS.md`, not in an agent's private memory (stated).
 - Never add Devin or any AI agent as a co-author, and never mention Devin, agents, session links or badges in commits, PRs, comments or docs (stated).
