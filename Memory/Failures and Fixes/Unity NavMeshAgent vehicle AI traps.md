@@ -23,6 +23,8 @@ In `gears-game-jam` on Unity 6000.6.0f1, an AI car driven by `Rigidbody` physics
 2. Setting `agent.nextPosition = transform.position` and reading `agent.steeringTarget` in the same `Update` caused random full-lock steering spikes. Unity updates crowd corners between frames, so a `74 m/s` car regularly stepped past a path corner before `steeringTarget` advanced, placing `steeringTarget` behind the car and flipping `Atan2` near 180 degrees.
 3. Calling `agent.Warp` when rebinding to a landing NavMesh teleported `transform.position` even with `agent.updatePosition = false`.
 4. Running `dotnet build Assembly-CSharp.csproj` from the terminal failed inside cached Unity editor packages due to `ObjectPool` and `Image` symbol collisions outside the Editor build pipeline.
+5. Forcing `Car.State.Boat` for an entire `Boatable` link stalled on the beach because `BoatMode` cuts propulsion once `overDryLand` turns `true`, and falling into open ocean outside `NavMeshSnapRadius` or beneath a `10m` bridge left no water-level NavMesh under the boat.
+6. Moving vehicle colliders onto a child `Collisions` mesh and wheel `SphereCollider` children broke `other.TryGetComponent<Car>` inside `SpeedBoost` and `Checkpoint` triggers because Unity passes the child `Collider` rather than the root `Rigidbody` object.
 
 ## What worked
 
@@ -30,6 +32,8 @@ In `gears-game-jam` on Unity 6000.6.0f1, an AI car driven by `Rigidbody` physics
 - Sample a pure-pursuit lookahead point `10m` to `24m` ahead along `agent.path.GetCornersNonAlloc`, stopping the lookahead at `agent.nextOffMeshLinkData.startPos` so the car lines up with bridges and ramps instead of cutting corners.
 - Latch `OffMeshLink` traversal from `agent.isOnOffMeshLink` or `agent.nextOffMeshLinkData`, cast `owner` or `agent.navMeshOwner` to `Unity.AI.Navigation.NavMeshLink` to read `link.area`, freeze `nextPosition` updates until crossing the link exit plane, and save plus restore `transform.SetPositionAndRotation` around any off-mesh `agent.Warp`.
 - Check `car.CameraAnchored` rather than `car.OnGround` for surface traction so `BoatMode` keeps throttle over deep water where wheel raycasts miss solid ground.
+- Switch a `Boatable` link back to `Car` as soon as `IsInDeepWater` turns `false` on the shoreline, and when stranded in deep water with no water-level NavMesh, scan scene `NavMeshLink` endpoints near water height and score them by sail distance plus `NavMesh.CalculatePath` length to `target`.
+- Resolve `Car` in `OnTriggerEnter` with `other.GetComponentInParent<Car>()` and debounce `SpeedBoost` per `Car` so multiple child colliders on one vehicle do not stack impulses.
 - For fast CLI compile verification in Unity 6 projects when Editor packages fail `dotnet build`, invoke Roslyn `csc.dll` directly with `Assembly-CSharp.csproj` `HintPath` references and `Library/ScriptAssemblies/*.dll`.
 - Keep `Time.deltaTime` off `Input.GetAxis` mouse movement axes in `CameraController`, since `type: 1` mouse axes already return per-frame deltas.
 
