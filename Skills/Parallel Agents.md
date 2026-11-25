@@ -12,9 +12,9 @@ tags:
 
 William wants agents to split tasks and work in parallel with different roles, to get code written quickly. See [[Workflow Preferences]]. Treat this note as his standing instruction to create subagents and child sessions.
 
-## Task list first
+## Plan and task list first
 
-Write the task list before splitting, and show it to William. Mark which tasks run in parallel and which agent owns each one. Tick tasks off as results come in.
+Write the plan and task list before splitting, and show both to William. Mark which tasks run in parallel and which agent owns each one. Tick tasks off as results come in.
 
 ## When to split
 
