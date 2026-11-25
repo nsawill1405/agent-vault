@@ -44,3 +44,7 @@ Silence a single line with a `style-lint: ignore` comment that says why. See `Sk
 ## Credit
 
 `Skills/Unslop.md`, `Skills/ADR Writing.md` and `Skills/PR Review Loop.md` are adapted from [Robbie Palmer's hq](https://github.com/Robbie-Palmer/hq). Each links to its source.
+
+## License
+
+[AGPL-3.0](LICENSE). The hq-derived skills, and the hq notes in earlier commits, come from an AGPL-3.0 project, so the whole vault uses the same license.
