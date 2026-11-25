@@ -31,6 +31,13 @@ The vault beside the installed skill at `~/.agents/skills/lihfolk/../../LihFolk 
 
 Use `python3` with its `_tools/vault.py` helper.
 
+## EditableMesh and mesh persistence
+
+- `CreateMeshPartAsync(Content.fromObject(editableMesh))` links the live editable object. If the editable is destroyed, the MeshPart becomes invisible even though its size and collision properties still look plausible.
+- To bake a session mesh, use `AssetService:CreateDataModelContentAsync(Content.fromObject(editableMesh))`, check for `Enum.CreateContentResult.Success`, then pass the returned opaque content to `CreateMeshPartAsync`.
+- Opaque data-model content is still session-scoped. It replicates and renders in the current session, but the render mesh does not survive saving and reopening the place. Persistent generated meshes need either uploaded mesh assets through `CreateAssetAsync` or geometry rebuilt from durable data.
+- `UnionAsync` works from the MCP command thread and is quick for simple boxes, but unions made from segmented road pieces keep visible faceting/scalloping. They are persistent, not as smooth as generated meshes.
+
 ## Saving places
 
 `save_place` cannot save a place that has never been saved. It returns `NeedsUserAction` and asks for one manual File > Save first. After that first save, later saves can be automated.

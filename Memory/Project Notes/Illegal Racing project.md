@@ -41,17 +41,20 @@ Design the game as controlled chaos rather than unrestricted destruction:
 
 ## Blackport Yard whitebox
 
-The first track whitebox lives in the open Studio place as `Workspace.Whitebox_BlackportYard`. Layout version 3 was built after William asked for more height, a longer track, sharper turns, more loops and more randomness.
+The first track whitebox lives in the open Studio place as `Workspace.Whitebox_BlackportYard`. Layout version 4 was built after William asked for more height, a longer track, sharper turns, more loops, more randomness, smoother non-overlapping roads and a graybox material.
 
 Useful facts:
 
-- Main circuit centerline is about 5,494 studs across 32 segments.
+- Main circuit centerline is about 5,494 studs across 32 control segments.
 - Elevation range is 0 to 72 studs.
 - Main road width is 32 studs. Shortcut widths are 14 to 18 studs.
 - Ground cover is 1,700 by 1,700 studs, with outer boundary walls at about +/-820 studs.
 - The route uses sharp outer zigzags, a southwest/central inner loop, and an intentional overpass near `(-350, 220)`.
 - Alternate routes are an east container cut, a west warehouse cut, and a narrow high-level north bridge.
-- Folder layout is `00_Ground` through `11_ElevatedRoadSupports`; all parts are white `SmoothPlastic` and tagged `LF_Whitebox`.
+- Roads are continuous rounded ribbons generated with 6 quadratic samples per control-point corner. Main road uses 224 rounded samples.
+- Checkpoint markers are open gate frames, not solid walls.
+- Folder layout is `00_Ground` through `11_ElevatedRoadSupports`; all parts are gray `Concrete` and tagged `LF_Whitebox`.
+- Road visual meshes currently use session-scoped opaque mesh content. Before relying on a saved place, convert them to uploaded mesh assets or durable part/union geometry.
 
 Main circuit control points are `(x, z, elevation)`:
 
