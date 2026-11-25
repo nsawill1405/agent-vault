@@ -22,7 +22,7 @@ Agents read these notes before starting non-trivial work and update them through
 
 ## Patterns
 
-No notes yet. Add links here as patterns are recorded.
+- [[MLX speculative decoding for Ternary Bonsai 2.5 27B]], fast MLX server recipe, 2-bit Metal verify kernel, MTP drafter tuning, and worker-thread stream fix on M4 Pro.
 
 ## Failures and fixes
 

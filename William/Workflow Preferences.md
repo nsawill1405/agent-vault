@@ -54,3 +54,7 @@ Match this style when writing READMEs for his projects.
 ## Decision records
 
 For larger architecture choices, write a short ADR. See [[ADR Writing]].
+
+## Local inference (stated)
+
+Prefer MLX over `llama.cpp` when running local models on Apple Silicon (stated).
