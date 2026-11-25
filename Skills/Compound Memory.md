@@ -21,7 +21,7 @@ This vault is the single knowledge base for William's agents. Every lesson goes 
 
 1. Read [[William North]]. It is short and overrides everything else.
 2. Read the current repo's `AGENTS.md`.
-3. Open [[Memory Index]] and read the topic notes that match the task, such as [[Unity]] or [[Roblox]].
+3. Open [[Memory Index]] and read the topic notes that match the task, such as [[Unity]] or [[Roblox]]. If the repo has a note in `Memory/Projects/`, read it too.
 
 ## After work
 
@@ -47,10 +47,10 @@ Put it in exactly one place:
 
 ## Sync
 
-`Memory/`, `William/` and `Skills/` changes go straight to `main` so every session sees them:
+`Memory/`, `William/` and `Skills/` changes go straight to `main` so every session sees them. Run this from the vault root, with the vault on `main`:
 
 ```bash
-python3 tools/sync_vault.py push "Record <topic> in memory"
+cd <vault> && python3 tools/sync_vault.py push "Record <topic> in memory"
 ```
 
 The command runs the vault linter and skill export check, commits only vault notes, pulls with rebase and pushes. The Devin plugin hook also runs it at session end.

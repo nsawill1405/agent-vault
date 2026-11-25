@@ -135,7 +135,17 @@ def ahead_of_origin_count(vault_root: Path) -> int:
     return int(ahead_result.stdout.strip() or "0")
 
 
+def current_branch(vault_root: Path) -> str:
+    branch_result = run_git(vault_root, ["rev-parse", "--abbrev-ref", "HEAD"])
+    return branch_result.stdout.strip()
+
+
 def push_vault(vault_root: Path, message: str) -> int:
+    branch = current_branch(vault_root)
+    if branch != "main":
+        sys.stderr.write("Vault is on branch '" + branch + "'. Switch to main before syncing, or open a PR instead.\n")
+        return 1
+
     authorship_error = check_authorship.inspect_message_text(message)
     if authorship_error is not None:
         sys.stderr.write(authorship_error + "\n")

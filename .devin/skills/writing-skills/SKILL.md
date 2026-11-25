@@ -45,10 +45,10 @@ Do not write a skill for a single fact. Put facts in `Memory/` or the repo's `AG
 2. Write the body as numbered steps with exact commands. Keep it under about 100 lines. Follow [[Unslop]].
 3. If the skill needs to run or edit files, add its name to `SKILL_ALLOWED_TOOLS` in `tools/sync_skills.py`.
 4. Link it from [[Home]].
-5. Sync and push. This checks, exports and pushes to `main`:
+5. Sync and push from the vault root, with the vault on `main`. This checks, exports and pushes to `main`:
 
    ```bash
-   python3 tools/sync_vault.py push "Add <name> skill"
+   cd <vault> && python3 tools/sync_vault.py push "Add <name> skill"
    ```
 
    In a cloud session without push rights to `main`, open a PR instead.
