@@ -27,6 +27,7 @@ No notes yet. Add links here as patterns are recorded.
 ## Failures and fixes
 
 - [[Roblox Studio MCP traps]], engine API limits, broken asset/vault paths and save behaviour hit during Roblox whiteboxing.
+- [[Unity NavMeshAgent vehicle AI traps]], `steeringTarget` lag spikes, `Warp` transform teleports, `NavMeshLink` mode switching, and CLI Roslyn compile checks in `gears-game-jam`.
 
 ## Project notes
 
