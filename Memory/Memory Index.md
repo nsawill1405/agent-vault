@@ -32,6 +32,7 @@ Agents read these notes before starting non-trivial work and update them through
 ## Project notes
 
 - [[Illegal Racing project]], greenfield Roblox racing game with the authoritative design in the repo's `GDD.md`.
+- [[Unity Debug Watch project]], compile-check configurations, `[Shortcut]` vs `[MenuItem]` in Play Mode, and `UserSettings` persistence.
 
 ## Decisions
 
