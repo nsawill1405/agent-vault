@@ -25,11 +25,13 @@ In `gears-game-jam` on Unity 6000.6.0f1, an AI car driven by `Rigidbody` physics
 4. Running `dotnet build Assembly-CSharp.csproj` from the terminal failed inside cached Unity editor packages due to `ObjectPool` and `Image` symbol collisions outside the Editor build pipeline.
 5. Forcing `Car.State.Boat` for an entire `Boatable` link stalled on the beach because `BoatMode` cuts propulsion once `overDryLand` turns `true`, and falling into open ocean outside `NavMeshSnapRadius` or beneath a `10m` bridge left no water-level NavMesh under the boat.
 6. Moving vehicle colliders onto a child `Collisions` mesh and wheel `SphereCollider` children broke `other.TryGetComponent<Car>` inside `SpeedBoost` and `Checkpoint` triggers because Unity passes the child `Collider` rather than the root `Rigidbody` object.
+7. Changing `agent.radius` at runtime did not widen corners because Recast polygon erosion is baked into the NavMesh asset, and blending near and far path samples cut straight chords inside corners. Checking XZ distance alone on `NavMeshLink` entry also triggered elevated flying links when driving underneath them.
 
 ## What worked
 
 - Disable `updatePosition`, `updateRotation`, `updateUpAxis`, `autoTraverseOffMeshLink`, `autoBraking`, and obstacle avoidance in `Awake`, and raise `agent.speed` and `agent.acceleration` above the vehicle top speed.
-- Sample a pure-pursuit lookahead point `10m` to `24m` ahead along `agent.path.GetCornersNonAlloc`, stopping the lookahead at `agent.nextOffMeshLinkData.startPos` so the car lines up with bridges and ramps instead of cutting corners.
+- Sample a pure-pursuit lookahead point along `agent.path.GetCornersNonAlloc`, center that point between left and right road edges with lateral `NavMesh.Raycast` probes so the car stops hugging baked `0.5m` inside curbs, and stop lookahead at `agent.nextOffMeshLinkData.startPos` so it lines up with bridges and ramps.
+- Gate all `OffMeshLink` triggers by vertical height delta (`<= 2.8m`) and rebind `agent.nextPosition` to the local elevation layer so passing underneath an overpass or elevated flying link never triggers it.
 - Latch `OffMeshLink` traversal from `agent.isOnOffMeshLink` or `agent.nextOffMeshLinkData`, cast `owner` or `agent.navMeshOwner` to `Unity.AI.Navigation.NavMeshLink` to read `link.area`, freeze `nextPosition` updates until crossing the link exit plane, and save plus restore `transform.SetPositionAndRotation` around any off-mesh `agent.Warp`.
 - Check `car.CameraAnchored` rather than `car.OnGround` for surface traction so `BoatMode` keeps throttle over deep water where wheel raycasts miss solid ground.
 - Switch a `Boatable` link back to `Car` as soon as `IsInDeepWater` turns `false` on the shoreline, and when stranded in deep water with no water-level NavMesh, scan scene `NavMeshLink` endpoints near water height and score them by sail distance plus `NavMesh.CalculatePath` length to `target`.
