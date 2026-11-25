@@ -10,12 +10,12 @@ tags:
 
 Tested lessons that apply across [[William North]]'s projects. Agents add to these through [[Compound Memory]].
 
-Each topic note is a list of one-line rules. Facts about a single repo go in that repo's `AGENTS.md`, not here.
+Big topics are folders with a hub note that links one note per area. Open the hub, then only the notes the task needs. Each note is a list of one-line rules. Facts about a single repo go in that repo's `AGENTS.md`, not here.
 
 ## Topics
 
-- [[Unity]], compiling without the Editor, API traps, and NavMeshAgent vehicle steering.
-- [[Roblox]], engine traps, Studio MCP limits, and Fragua timing.
+- [[Unity]], hub for compile checks, API traps, and NavMeshAgent vehicles.
+- [[Roblox]], hub for engine traps, Studio MCP, Fragua, and RoVault.
 - [[Local inference]], MLX setup and speed on Apple Silicon.
 - [[Agent tooling]], limits of Devin and the GitHub app.
 
