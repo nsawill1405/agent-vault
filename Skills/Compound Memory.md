@@ -21,7 +21,7 @@ This vault is the single knowledge base for William's agents. Every lesson goes 
 
 1. Read [[William North]]. It is short and overrides everything else.
 2. Read the current repo's `AGENTS.md`.
-3. Open [[Memory Index]] and read the topic notes that match the task, such as [[Unity]] or [[Roblox]]. If the repo has a note in `Memory/Projects/`, read it too.
+3. Open [[Memory Index]] and read the topic notes that match the task, such as [[Unity]] or [[Roblox]].
 
 ## After work
 
@@ -32,9 +32,8 @@ Put it in exactly one place:
 | Lesson | Where |
 | --- | --- |
 | A preference or rule William stated | `William/`, marked "(stated)" |
-| A fact about one repo: build commands, invariants, traps in its own code | That repo's `AGENTS.md`, in a PR |
+| A fact about one repo: build commands, invariants, traps in its own code | That repo's `AGENTS.md`, in a PR. Skip it if agents cannot push to the repo |
 | A trap or fix that applies in several repos, such as an engine or tool quirk | The matching topic note in `Memory/` |
-| A fact about a repo agents cannot push to | `Memory/Projects/<repo>.md` |
 | A repeatable multi-step procedure | A new skill. Follow [[Writing Skills]] |
 
 ## How to write it
