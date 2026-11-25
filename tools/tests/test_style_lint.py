@@ -120,5 +120,17 @@ class LintFileTest(unittest.TestCase):
         self.assertTrue(style_lint.is_supported(Path("Main.luau")))
 
 
+class FileLengthTests(unittest.TestCase):
+    def test_long_file_is_flagged(self):
+        source = "value = 1\n" * (style_lint.MAX_FILE_LINES + 1)
+        findings = style_lint.lint_file_length(Path("big.py"), source)
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0].rule, "long-file")
+
+    def test_file_at_the_limit_is_fine(self):
+        source = "value = 1\n" * style_lint.MAX_FILE_LINES
+        self.assertEqual(style_lint.lint_file_length(Path("ok.py"), source), [])
+
+
 if __name__ == "__main__":
     unittest.main()

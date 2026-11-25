@@ -11,6 +11,15 @@ tags:
 Part of [[William North]]. Language specifics live in [[Language Conventions]].
 The linter in `tools/style_lint.py` checks some of these rules automatically. See [[Style Linter]].
 
+## Many small files over one large file (stated)
+
+William wants code split across several focused files, not one large script. Big files cause clutter and confusion, and are harder to maintain and extend.
+
+- Give each file one job, such as one class, one system, or one group of related helpers. Name the file after that job.
+- When a file grows past about 300 lines or starts doing two jobs, split it before adding more. `long-file` in the [[Style Linter]] flags this.
+- Keep the entry point thin. It wires modules together and holds little logic itself.
+- Follow the language's normal module layout: Luau ModuleScripts, C# one type per file, TypeScript and Python modules.
+
 ## Simple, longer code over one-liners (stated)
 
 William prefers code that takes more lines but reads in one pass.

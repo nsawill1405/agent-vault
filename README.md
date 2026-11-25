@@ -33,7 +33,7 @@ See `Skills/Writing Skills.md`. Agents may add skills on their own.
 
 ## Style linter
 
-`tools/style_lint.py` flags code that is hard to explain or debug: nested ternaries, nested comprehensions, long method chains, swallowed errors, and overlong lines. It reads Python, TypeScript, JavaScript, C#, and Luau.
+`tools/style_lint.py` flags code that is hard to explain or debug: nested ternaries, nested comprehensions, long method chains, swallowed errors, overlong lines, and files over 300 lines. It reads Python, TypeScript, JavaScript, C#, and Luau.
 
 ```bash
 python3 tools/style_lint.py path/to/repo/src

@@ -17,6 +17,7 @@ Items marked "stated" are rules William gave. Items marked "observed" are defaul
 ## The short version
 
 - Write simple, longer code that is easy to explain and debug. No clever one-liners (stated).
+- Split code across many small files with one job each. No large single scripts. See [[Coding Principles]] (stated).
 - No load-bearing hacks. Nothing should work only because of a fragile trick, a magic value, or an accident of ordering (stated).
 - Add a linter when a repo lacks one (stated).
 - Split work across parallel subagents with different roles to get code written quickly. See [[Parallel Agents]] (stated).
