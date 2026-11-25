@@ -70,6 +70,27 @@ Main circuit control points are `(x, z, elevation)`:
 
 The place had never been saved when the whitebox was built, so Studio's save API could not save it automatically. William needs to save it once through File > Save before later saves can be automated.
 
+## Fragua car driving proof
+
+The first reusable car entity is a Fragua `Car` type backed by a `Model`. Source files live in the illegal-racing project:
+
+- `ReplicatedStorage/Modules/CarControl.luau` defines the shared `{ throttle, steer }` input contract.
+- `ReplicatedStorage/Modules/CarRig.luau` creates and validates `Root`, `DriveSeat`, wheel visuals and suspension attachments.
+- `ReplicatedStorage/Modules/CarPhysics.luau` runs four-corner raycast suspension and accepts any input source.
+- `ReplicatedStorage/Controllers/PlayerController.luau` supplies player input.
+- `ServerStorage/Controllers/BotController.luau` supplies target/waypoint-following input through the same contract.
+- `ReplicatedFirst/ClientLoader.local.luau` scans tagged Fragua cars and starts client physics only when the local player occupies the drive seat.
+- `ServerStorage/Fragua/Types/CarServerBehavior.luau` owns rig creation, network ownership, idle anchoring and server bot physics.
+
+Verified in Studio playtest:
+
+- Player driving works with `W`; the car moved about 392 studs in 2.5 seconds and still had speed after key release.
+- Bot driving works with `UseBotController = true` and `_FraguaRef_DriveTarget`; the server-owned car drove toward the target and reached about 97 studs/second.
+- No client or server console errors remained after the final driving test.
+- Roblox network ownership cannot be changed while the root is anchored. Unanchor first, then call `SetNetworkOwner`.
+- Fragua client behavior startup is too timing-sensitive for seat occupancy. The normal client loader polling scan is more reliable and should stay the owner of player-driven client physics.
+- `ReplicatedFirst` scripts can run before `ReplicatedStorage` children replicate. Use `WaitForChild` before requiring shared modules there.
+
 ## Related
 
 - [[Memory Index]]
