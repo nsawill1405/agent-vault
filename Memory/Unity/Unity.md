@@ -14,6 +14,7 @@ Cross-project Unity lessons. Open only the note that matches the task. Repo-spec
 - [[Unity compile checks]], building against Unity reference DLLs without the Editor.
 - [[Unity API traps]], GetInstanceID, shortcuts in Play Mode, editor state, triggers, input.
 - [[Unity NavMeshAgent vehicles]], steering a Rigidbody car along a NavMesh path.
+- [[Unity Asset Store publishing]], publisher profile and package artwork sizes.
 
 ## Related
 
