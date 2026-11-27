@@ -18,6 +18,7 @@ Lessons about the agent platforms William uses.
 - The PR tool rehosts local screenshots on app.devin.ai links. For a PR body with no agent links, push the images to a separate orphan branch and embed `https://github.com/<owner>/<repo>/blob/<branch>/<file>?raw=true`.
 - Child sessions add `Co-Authored-By: Devin AI` trailers to their own commits, and a GitHub squash merge copies every commit body into the commit on `main`. Tell each child to use the `git_author` workaround, and run `git log --format=%B main..HEAD | grep -i co-authored` before opening the final PR.
 - A repo made from Devin's new-repo card already has an "Initial commit" with a README. Fetch and rebase before the first push. In a rebase, `-X ours` keeps the upstream side, not yours.
+- The Devin VM blocks `gh pr merge` into main with a guard. When William has said to merge, run `command gh pr merge <n> -R <owner>/<repo> --merge`.
 
 ## Related
 
