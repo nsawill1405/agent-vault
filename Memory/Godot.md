@@ -30,3 +30,5 @@ Lessons from Godot 4 GDScript projects.
 - Godot gives no warning when `theme_type_variation` names a type the theme does not define, and the control can render with no visible text. Check each variation string against the theme's type names.
 - For click-driven minigames, record presses in `_input()` and consume them in `_process()`. Polling `Input.is_mouse_button_pressed()` misses quick clicks. Judge each click against the state the player saw before moving anything.
 - Meters filled by fixed float steps can stop just short of 1.0 (0.3 + 7 × 0.1 = 0.9999…). Test against `1.0 - 1e-6`, not `1.0`.
+- An autowrapped `Label` only gets its real height after one layout pass, so a new wrapped panel shows at the wrong size for one frame. Keep it at `modulate.a = 0.0` for its first tick; `reset_size()` does not fix it.
+- Cooldowns that should outlast a relaunch, such as "one rare event per hour of play", belong in the saved state and count down with play time. A timer in the scene restarts on every launch.
