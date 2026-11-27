@@ -23,3 +23,5 @@ Lessons from Godot 4 GDScript projects.
 - A focused `Button` takes Tab for focus cycling before `_unhandled_input` sees it. Read a Tab-bound action in `_input`, or set `focus_mode = FOCUS_NONE` on mouse-only buttons.
 - SVG UI art imported at `svg/scale=2.0` stays sharp on high-DPI screens. Divide the texture size by the same scale for layout, and set it in every new `.import` file.
 - Headless Godot cannot screenshot. Run under `xvfb-run` with a `--script` that loads the main scene, waits about 150 frames, then saves `get_viewport().get_texture().get_image()`.
+- A `CanvasModulate` darkens everything on its canvas layer, so night lighting with `PointLight2D` needs the HUD on its own `CanvasLayer`. Use `light_mask` bits so the lantern lights only nearby layers.
+- Without `rsvg-convert`, preview SVG art with a small Godot `--script` that calls `Image.load_svg_from_string()` and saves a PNG.
