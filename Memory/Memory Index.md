@@ -16,6 +16,7 @@ Big topics are folders with a hub note that links one note per area. Open the hu
 
 - [[Unity]], hub for compile checks, API traps, and NavMeshAgent vehicles.
 - [[Roblox]], hub for engine traps, Studio MCP, Fragua, and RoVault.
+- [[Godot]], GDScript parse traps, transparent click-through windows, scaling.
 - [[Local inference]], MLX setup and speed on Apple Silicon.
 - [[Agent tooling]], limits of Devin and the GitHub app.
 
