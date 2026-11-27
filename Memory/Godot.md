@@ -34,3 +34,5 @@ Lessons from Godot 4 GDScript projects.
 - An autowrapped `Label` only gets its real height after one layout pass, so a new wrapped panel shows at the wrong size for one frame. Keep it at `modulate.a = 0.0` for its first tick; `reset_size()` does not fix it.
 - Cooldowns that should outlast a relaunch, such as "one rare event per hour of play", belong in the saved state and count down with play time. A timer in the scene restarts on every launch.
 - In idle games, when a perk changes what one worker earns in the live sim, add it to the analytic income formula too, or offline pay silently ignores it.
+- Size a popup panel from the space it has (`Vector2(min(want_w, view_w - margin), toolbar_top - top_margin)`) and put long lists in a `ScrollContainer` with that height, so the panel fills the frame instead of growing off screen.
+- When testing weighted random tiers, compare single entries of each tier, not tier totals: four uncommon entries at weight 10 roll as often as one common at 40.
