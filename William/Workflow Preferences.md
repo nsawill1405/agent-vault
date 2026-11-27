@@ -50,6 +50,7 @@ Embed demo clips as committed GIFs, not `.mp4` links. Put a hero GIF under the t
 - Never add Devin or any AI agent as a `Co-Authored-By` trailer.
 - Never mention Devin, AI agents, session links, "Requested by", badges, or "Generated with" footers in commit messages, PR titles, PR descriptions, code comments or docs. Strip any footer a tool appends right after creating or updating a PR.
 - Write commits, PRs and comments in William's voice. Use William's git identity.
+- If a `Co-Authored-By: Devin AI` trailer lands on `main` anyway, leave it. Do not force-push `main` to remove it. William said: "if it comes to it just commit with co authored by devin ai. dont force push main" (stated).
 
 ## Local inference (stated)
 
