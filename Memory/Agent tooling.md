@@ -20,6 +20,7 @@ Lessons about the agent platforms William uses.
 - A repo made from Devin's new-repo card already has an "Initial commit" with a README. Fetch and rebase before the first push. In a rebase, `-X ours` keeps the upstream side, not yours.
 - When a stacked PR's parent merges, retarget the child to `main` before William merges it. Otherwise it merges into the stale parent branch and never reaches main, and GitHub cannot retarget a closed PR.
 - The Devin VM blocks `gh pr merge` into main with a guard. When William has said to merge, run `command gh pr merge <n> -R <owner>/<repo> --merge`.
+- On William's Mac, the `~/.rokit/bin/stylua` and `selene` shims can be broken aftman wrappers. Use the real binaries under `~/.aftman/tool-storage/`, and pass selene's config explicitly with `--config` because `SELENE_CONFIG` is not enough.
 
 ## Related
 
