@@ -36,3 +36,4 @@ Lessons from Godot 4 GDScript projects.
 - In idle games, when a perk changes what one worker earns in the live sim, add it to the analytic income formula too, or offline pay silently ignores it.
 - Size a popup panel from the space it has (`Vector2(min(want_w, view_w - margin), toolbar_top - top_margin)`) and put long lists in a `ScrollContainer` with that height, so the panel fills the frame instead of growing off screen.
 - When testing weighted random tiers, compare single entries of each tier, not tier totals: four uncommon entries at weight 10 roll as often as one common at 40.
+- Test files that define `static func run(t)` are modules called from `tests/run_tests.gd`. Running one with `--script` hangs because it never quits, so check which files are entry points before running them.

@@ -26,3 +26,5 @@ Lessons about the agent platforms William uses.
 
 - [[Memory Index]]
 - [[Parallel Agents]]
+- To land a PR stack, merge each parent's new base into the child branch, run the tests, push, merge the parent, then retarget the child to `main` before merging it.
+- `gh release create --target` takes a branch name or a full commit SHA. A short SHA fails with "target_commitish is invalid".
