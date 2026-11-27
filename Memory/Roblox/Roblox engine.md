@@ -20,7 +20,9 @@ Roblox engine traps.
 - EditableMesh fails in published games until Allow Mesh / Image APIs is on (Studio Experience Settings > Security, or the dashboard's Configure > Settings).
 - `AssetService:CreateEditableMesh()` returns nil when the client's editable memory budget is used up. Check for nil.
 - EditableMesh faces render from the side where vertices go counterclockwise. For an upward-facing grid at (x = column, z = row), add `(v[r][c], v[r+1][c], v[r][c+1])` and `(v[r][c+1], v[r+1][c], v[r+1][c+1])`.
-- Animate EditableMesh vertices with one `mesh:BatchSetValues(vertexIds, positions)` call per frame, not a `SetPosition` per vertex.
+- Animate EditableMesh vertices with one `mesh:BatchSetValues(vertexIds, positions)` call per frame, not a `SetPosition` per vertex. It also takes normal ids with `Vector3` values and colour ids with `Color3` values, so give each vertex its own `AddNormal` and `AddColor` id, bind them with `SetFaceNormals` and `SetFaceColors`, and update all three per frame.
+- With StreamingEnabled, a client that pivots a server model (sway, bob) can grab the pivot before the parts arrive. `GetPivot()` then returns the origin and `PivotTo` drags the parts there. Make such models `ModelStreamingMode.Atomic` and wait for `PrimaryPart` before reading the pivot.
+- Translucent water over a stepped seabed shows every step edge as a hard line. Use one sloped `WedgePart` instead.
 - Check Luau types before Studio with `luau-lsp analyze --definitions=@roblox=globalTypes.d.luau --sourcemap=sourcemap.json src`. Make the sourcemap with `rojo sourcemap`. Download the definitions from luau-lsp's `scripts/globalTypes.d.luau`.
 
 ## Related
