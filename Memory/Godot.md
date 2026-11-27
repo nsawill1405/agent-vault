@@ -37,3 +37,5 @@ Lessons from Godot 4 GDScript projects.
 - Size a popup panel from the space it has (`Vector2(min(want_w, view_w - margin), toolbar_top - top_margin)`) and put long lists in a `ScrollContainer` with that height, so the panel fills the frame instead of growing off screen.
 - When testing weighted random tiers, compare single entries of each tier, not tier totals: four uncommon entries at weight 10 roll as often as one common at 40.
 - Test files that define `static func run(t)` are modules called from `tests/run_tests.gd`. Running one with `--script` hangs because it never quits, so check which files are entry points before running them.
+- A script method named `_set`, `_get` or `_notification` overrides the engine's virtual and fails to parse with "signature doesn't match the parent". Give UI callbacks a specific name such as `_set_spot`.
+- When the player can repurpose fixed slots (a pier spot becomes a wall), keep the slot plan as its own saved array and derive positions from it (`nth_spot(kind, k)`). Validate a loaded plan against what the save already owns, and rebuild it when it no longer fits.
