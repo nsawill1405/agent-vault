@@ -24,6 +24,8 @@ Roblox engine traps.
 - With StreamingEnabled, a client that pivots a server model (sway, bob) can grab the pivot before the parts arrive. `GetPivot()` then returns the origin and `PivotTo` drags the parts there. Make such models `ModelStreamingMode.Atomic` and wait for `PrimaryPart` before reading the pivot.
 - Translucent water over a stepped seabed shows every step edge as a hard line. Use one sloped `WedgePart` instead.
 - Check Luau types before Studio with `luau-lsp analyze --definitions=@roblox=globalTypes.d.luau --sourcemap=sourcemap.json src`. Make the sourcemap with `rojo sourcemap`. Download the definitions from luau-lsp's `scripts/globalTypes.d.luau`.
+- Parallel actors cannot mutate instances. For part-heavy visual systems, measure main-thread update time before enabling workers; packing SharedTables and applying part properties can cost as much as the math being offloaded.
+- Large SharedTable batch jobs should use contiguous numeric keys rather than generated string keys; string keys can erase the benefit of parallel work.
 
 ## Related
 
