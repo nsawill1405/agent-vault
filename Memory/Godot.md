@@ -27,3 +27,4 @@ Lessons from Godot 4 GDScript projects.
 - Without `rsvg-convert`, preview SVG art with a small Godot `--script` that calls `Image.load_svg_from_string()` and saves a PNG.
 - Do not add per-frame wobble to a value that is also smoothed with `lerpf(value, target, rate * delta)`. The wobble feeds back and grows about `1 / (rate * delta)` times. Smooth a separate variable and add the wobble on output.
 - A new test file does nothing until it is listed in `tests/run_tests.gd`. If another slice owns that file, put the exact line in the PR's integration notes.
+- Godot gives no warning when `theme_type_variation` names a type the theme does not define, and the control can render with no visible text. Check each variation string against the theme's type names.
