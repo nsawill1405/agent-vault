@@ -20,6 +20,7 @@ Lessons from Godot 4 GDScript projects.
 - A wrapping `Label` in a container collapses to zero width. Set `custom_minimum_size.x` to the smaller of the text width and the space available.
 - A balance simulator that plays greedily through the real `can_buy` and `buy` code catches progression that is far too fast. Run it after every cost change.
 - Rebuilding a container's children with only `queue_free()` leaves the old rows in the tree until the end of the frame, so `reset_size()` still counts them. Call `remove_child(child)` before `queue_free()`.
+- To tell when a list panel needs rebuilding, keep a `duplicate(true)` of the data it last drew and compare it to the live data. Comparing child counts loops forever while freed rows are still in the tree.
 - A focused `Button` takes Tab for focus cycling before `_unhandled_input` sees it. Read a Tab-bound action in `_input`, or set `focus_mode = FOCUS_NONE` on mouse-only buttons.
 - SVG UI art imported at `svg/scale=2.0` stays sharp on high-DPI screens. Divide the texture size by the same scale for layout, and set it in every new `.import` file.
 - Headless Godot cannot screenshot. Run under `xvfb-run` with a `--script` that loads the main scene, waits about 150 frames, then saves `get_viewport().get_texture().get_image()`.
