@@ -25,3 +25,5 @@ Lessons from Godot 4 GDScript projects.
 - Headless Godot cannot screenshot. Run under `xvfb-run` with a `--script` that loads the main scene, waits about 150 frames, then saves `get_viewport().get_texture().get_image()`.
 - A `CanvasModulate` darkens everything on its canvas layer, so night lighting with `PointLight2D` needs the HUD on its own `CanvasLayer`. Use `light_mask` bits so the lantern lights only nearby layers.
 - Without `rsvg-convert`, preview SVG art with a small Godot `--script` that calls `Image.load_svg_from_string()` and saves a PNG.
+- Do not add per-frame wobble to a value that is also smoothed with `lerpf(value, target, rate * delta)`. The wobble feeds back and grows about `1 / (rate * delta)` times. Smooth a separate variable and add the wobble on output.
+- A new test file does nothing until it is listed in `tests/run_tests.gd`. If another slice owns that file, put the exact line in the PR's integration notes.
