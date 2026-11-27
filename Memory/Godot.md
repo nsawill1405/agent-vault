@@ -28,3 +28,5 @@ Lessons from Godot 4 GDScript projects.
 - Do not add per-frame wobble to a value that is also smoothed with `lerpf(value, target, rate * delta)`. The wobble feeds back and grows about `1 / (rate * delta)` times. Smooth a separate variable and add the wobble on output.
 - A new test file does nothing until it is listed in `tests/run_tests.gd`. If another slice owns that file, put the exact line in the PR's integration notes.
 - Godot gives no warning when `theme_type_variation` names a type the theme does not define, and the control can render with no visible text. Check each variation string against the theme's type names.
+- For click-driven minigames, record presses in `_input()` and consume them in `_process()`. Polling `Input.is_mouse_button_pressed()` misses quick clicks. Judge each click against the state the player saw before moving anything.
+- Meters filled by fixed float steps can stop just short of 1.0 (0.3 + 7 × 0.1 = 0.9999…). Test against `1.0 - 1e-6`, not `1.0`.
